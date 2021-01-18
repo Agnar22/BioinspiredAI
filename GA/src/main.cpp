@@ -43,6 +43,20 @@ std::vector<std::vector<double>> read_csv(std::string file_name) {
     return file;
 }
 
+struct Individual {
+    std::bitset<BITSTRING_SIZE> genes;
+    double fitness;
+
+    Individual () {
+        // TODO: random initialization.
+        genes = std::bitset<BITSTRING_SIZE>();
+    }
+
+    Individual (std::string gene_sequence) {
+        genes = std::bitset<BITSTRING_SIZE>(std::string(gene_sequence));
+    }
+};
+
 int main() {
     auto data = read_csv("data.csv");
     std::cout << "read file " << data.size() << " " << data[0].size() << std::endl;
