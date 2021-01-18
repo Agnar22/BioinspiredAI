@@ -57,6 +57,41 @@ struct Individual {
     }
 };
 
+class SimpleGA {
+    public:
+
+        SimpleGA(int population_size, double (*fitness_function)(std::bitset<BITSTRING_SIZE>)) {
+        }
+
+        void simulate() {
+        }
+
+        int get_population_size(){
+        }
+
+    private:
+        double (*fitness_function)(std::bitset<BITSTRING_SIZE>);
+        std::vector<Individual> population;
+
+        void test_fitness() {
+        }
+
+        std::vector<std::pair<int, int>> select() {
+        }
+
+        double get_random_fitness(double max_fitness) {
+        }
+
+        int get_pos_from_fitness(double fitness) {
+        }
+
+        std::vector<Individual> crossover(std::vector<std::pair<int, int>> selected_pairs) {
+        }
+
+        std::vector<Individual> mutate(std::vector<Individual> children) {
+        }
+};
+
 int main() {
     auto data = read_csv("data.csv");
     std::cout << "read file " << data.size() << " " << data[0].size() << std::endl;
