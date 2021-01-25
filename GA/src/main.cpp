@@ -105,6 +105,13 @@ class SimpleGA {
             return population.size();
         }
 
+        void store_population(std::string file_name) {
+            std::ofstream file(file_name);
+            for (Individual &indiv:population)
+                file << indiv.genes.to_string() << std::endl;
+            file.close();
+        }
+
     private:
 
         double (*fitness_function)(std::bitset<BITSTRING_SIZE>);
@@ -208,4 +215,6 @@ int main() {
 
     SGA.simulate();
     SGA.print_population();
+    SGA.store_population("sin.txt");
+    system("./run_python.sh");
 }
