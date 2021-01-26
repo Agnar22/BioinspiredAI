@@ -1,17 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-scores = []
-with open("sin.txt") as f:
-    for line in f.readlines():
-        line = line.strip()
-        length = len(line)
-        print(length, 2**length, int(line, 2), line)
-        scores.append((int(line, 2) / (2**length)) * 128)
-scores = np.array(scores)
-print(scores)
-x = np.arange(0, 128, 0.1)
-y = np.sin(x)
-plt.plot(x, y)
-plt.scatter(scores, np.sin(scores), color='orange')
-plt.show()
+
+def draw_sin(x: np.ndarray, y: np.ndarray):
+  x_sin = np.arange(0, 128, 0.1)
+  y_sin = np.sin(x_sin)
+  plt.plot(x_sin, y_sin)
+  plt.scatter(x, y-1, color='orange')
+  plt.show()
