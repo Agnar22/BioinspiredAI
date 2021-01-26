@@ -10,7 +10,9 @@ import random
 
 class LinReg():
     def __init__(self):
-        pass
+        self.data = np.genfromtxt("data.csv", delimiter=',')
+        self.x = self.data[:, :-1]
+        self.y = self.data[:, -1]
 
     def train(self, data, y):
         model  = LinearRegression().fit(data, y)
