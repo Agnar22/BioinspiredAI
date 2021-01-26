@@ -1,2 +1,2 @@
 #!/bin/sh
-python draw_graph.py
+nohup python draw_graph.py
