@@ -1,0 +1,24 @@
+
+
+ - Minimize RMSE, can be used as fitness
+ - GA params.: population size, generation number, crossover rate, mutation rate, etc.
+
+The Simple Genetic Algorithm
+
+The Crowding Concept
+ - Extend SGA
+ - Measure variation (entropy)
+
+Fitness Functions and Tasks
+ - Sine function (maximize)
+ - Feature selection
+    - ML algorithm (RMSE)
+
+
+Theory Questions:
+ - Niching?
+ - diff genotype and fenotype?
+ - other questions might be asked
+
+
+
