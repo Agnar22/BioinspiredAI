@@ -35,7 +35,7 @@ class SimpleGA:
     for x in range(self.population_size):
       self.population.append(Individual())
 
-  def simulate(self, mod_draw_fitness_graph):
+  def simulate(self, mod_draw_fitness_graph, hamming):
     self.test_fitness(self.population)
 
     for x in range(param.EPOCHS):
@@ -47,13 +47,14 @@ class SimpleGA:
       children = self.crossover(selected_pairs)
       children = self.mutate(children)
       if self.crowding:
-        self.population = self.survive(self.population, selected_pairs, children)
+        children = self.survive(self.population, selected_pairs, children, hamming)
+        self.population = self.kill_weakest(children)
       else:
         self.population = self.kill_weakest(children)
-      self.test_fitness(self.population, verbose=not self.crowding)
+      self.test_fitness(self.population, verbose=True)
 
-      if x % 225 == 0 and self.crowding:
-        self.test_fitness(self.population, verbose=True)
+      # if x % 5 == 0 and self.crowding:
+      #   self.test_fitness(self.population, verbose=True)
         # print(f'Population size: {len(self.population)}')
 
   def print_population(self):
@@ -126,18 +127,22 @@ class SimpleGA:
           indiv.genes = ''.join(genes)
     return children
 
-  def survive(self, parents, selected_individuals, children):
+  def survive(self, parents, selected_individuals, children, hamming):
+    next_gen = []
     for pos, child in enumerate(children):
       child.actual_fitness, child.fitness = self.fitness_function(self.genes_to_value_function(child.genes))
       parent1 = selected_individuals[pos // 2][0]
       parent2 = selected_individuals[pos // 2][1]
       most_similar = reduce(
-        lambda x, y: x if SimpleGA.distance(parents[x], child) < SimpleGA.distance(parents[y], child) else y,
+        lambda x, y: x if SimpleGA.distance(parents[x], child, hamming) < SimpleGA.distance(parents[y], child, hamming) else y,
         [parent1, parent2]
       )
       if parents[most_similar].fitness < child.fitness:
-        parents[most_similar] = child
-    return parents
+        #parents[most_similar] = child
+        next_gen.append(copy.deepcopy(child))
+      else:
+        next_gen.append(copy.deepcopy(parents[most_similar]))
+    return next_gen
 
   def add_entropy(self):
     on = [0 for _ in range(param.BITSTRING_SIZE)]
@@ -153,8 +158,9 @@ class SimpleGA:
     return self.entropies
 
   @staticmethod
-  def distance(indiv_1: Individual, indiv_2: Individual):
-    return abs(int(indiv_1.genes) - int(indiv_2.genes))
+  def distance(indiv_1: Individual, indiv_2: Individual, hamming=False):
+    if not hamming:
+      return abs(int(indiv_1.genes) - int(indiv_2.genes))
     hamming_distance = 0
     for gene_1, gene_2 in zip(indiv_1.genes, indiv_2.genes):
       if gene_1 == gene_2:
@@ -211,9 +217,9 @@ if __name__ == '__main__':
   param.BITSTRING_SIZE = 32
   param.MINIMIZE_FITNESS = False
   param.MOD_DRAW_FITNESS = 5
-  param.EPOCHS, param.POPULATION_SIZE, param.CHILDREN, param.CROSSOVER_PROB, param.MUTATION_PROB = 30, 150, 450, 0.7, 0.02
+  param.EPOCHS, param.POPULATION_SIZE, param.CHILDREN, param.CROSSOVER_PROB, param.MUTATION_PROB = 30, 400, 1200, 0.7, 0.02
   ga_sin = SimpleGA(param.POPULATION_SIZE, fitness.sin, genes_to_value(0, 128, return_bitstring=False), crowding=False)
-  ga_sin.simulate(param.MOD_DRAW_FITNESS)
+  ga_sin.simulate(param.MOD_DRAW_FITNESS, False)
   ga_sin.print_population()
 
   # Task 1F
@@ -225,23 +231,23 @@ if __name__ == '__main__':
   lin_reg = LinReg.LinReg()
   print(f'Loss with all columns: {lin_reg.get_fitness(lin_reg.x, lin_reg.y):.5f}')
   ga_reg = SimpleGA(param.POPULATION_SIZE, fitness.lin_reg, genes_to_value(0, 128, return_bitstring=True), crowding=False)
-  ga_reg.simulate(param.MOD_DRAW_FITNESS)
+  ga_reg.simulate(param.MOD_DRAW_FITNESS, True)
   print(f'All time best: {ga_reg.all_time_best}')
 
   # Task 1G
   print("Task 1G - Sin")
   param.BITSTRING_SIZE = 32
   param.MINIMIZE_FITNESS = False
-  param.MOD_DRAW_FITNESS = 500
-  param.EPOCHS, param.POPULATION_SIZE, param.CHILDREN, param.CROSSOVER_PROB, param.MUTATION_PROB = 6750, 150, 1, 0.7, 0.02
+  param.MOD_DRAW_FITNESS = 5
+  param.EPOCHS, param.POPULATION_SIZE, param.CHILDREN, param.CROSSOVER_PROB, param.MUTATION_PROB = 30, 400, 200, 0.7, 0.02
   # Sin
   ga_cw_sin = SimpleGA(param.POPULATION_SIZE, fitness.sin, genes_to_value(0, 128, return_bitstring=False), crowding=True)
-  ga_cw_sin.simulate(param.MOD_DRAW_FITNESS)
+  ga_cw_sin.simulate(param.MOD_DRAW_FITNESS, False)
   ga_cw_sin.print_population()
 
   draw_graph.draw(
     [[x for x in range(len(ga_sin.get_entropies()))], ga_sin.get_entropies(), "sga_sin"],
-    [[x/225 for x in range(len(ga_cw_sin.get_entropies()))], ga_cw_sin.get_entropies(), "sga_cw_sin"]
+    [[x for x in range(len(ga_cw_sin.get_entropies()))], ga_cw_sin.get_entropies(), "sga_cw_sin"]
   )
 
 
@@ -250,14 +256,14 @@ if __name__ == '__main__':
   param.BITSTRING_SIZE = 101
   param.MINIMIZE_FITNESS = True
   param.MOD_DRAW_FITNESS = None
-  param.EPOCHS, param.POPULATION_SIZE, param.CHILDREN, param.CROSSOVER_PROB, param.MUTATION_PROB = 3375, 150, 1, 0.8, 0.02
+  param.EPOCHS, param.POPULATION_SIZE, param.CHILDREN, param.CROSSOVER_PROB, param.MUTATION_PROB = 15, 400, 300, 0.99, 0.02
   ga_cw_reg = SimpleGA(param.POPULATION_SIZE, fitness.lin_reg, genes_to_value(0, 128, return_bitstring=True),
                        crowding=True)
-  ga_cw_reg.simulate(param.MOD_DRAW_FITNESS)
+  ga_cw_reg.simulate(param.MOD_DRAW_FITNESS, True)
   ga_cw_reg.print_population()
 
   draw_graph.draw(
     [[x for x in range(len(ga_reg.get_entropies()))], ga_reg.get_entropies(), "sga_reg"],
-    [[x/225 for x in range(len(ga_cw_reg.get_entropies()))], ga_cw_reg.get_entropies(), "sga_cw_reg"]
+    [[x for x in range(len(ga_cw_reg.get_entropies()))], ga_cw_reg.get_entropies(), "sga_cw_reg"]
   )
   print(f'All time best: {ga_cw_reg.all_time_best}')
