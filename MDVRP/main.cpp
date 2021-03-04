@@ -56,11 +56,7 @@ class Problem {
         std::vector<std::pair<double, double>> positions,
         std::vector<double> cust_serv_dur,
         std::vector<double> cust_demand
-    ) {
-        this->max_length = max_length;
-        this->max_load = max_load;
-        this->positions = positions;
-        this->cust_serv_dur = cust_serv_dur;
+    ): max_length{max_length}, max_load{max_load}, positions{positions}, cust_serv_dur{cust_serv_dur}, cust_demand{cust_demand} {
 
         std::cout << "Calculating distance." << std::endl;
         calculate_distances();
