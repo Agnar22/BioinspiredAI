@@ -16,14 +16,6 @@
 //  - niching
 
 
-struct Individual {
-
-};
-
-class GA {
-
-};
-
 class Problem {
     private:
         int num_customers, num_depots;
@@ -31,6 +23,7 @@ class Problem {
         std::vector<std::pair<double, double>> positions;
         std::vector<double> cust_serv_dur, cust_demand;
         std::vector<std::vector<double>> distances;
+        std::vector<std::vector<double>> depot_distances;
 
         void calculate_distances() {
             distances.resize(positions.size(), std::vector<double>(positions.size()));
@@ -44,6 +37,11 @@ class Problem {
             }
         }
 
+        void find_depot_distances() {
+            for (int customer=0; customer<num_customers; ++customer)
+                depot_distances.push_back(std::vector<double>(distances[customer].begin()+num_customers, distances[customer].end()));
+        }
+
         double euclidian_dist(std::pair<double, double> p1, std::pair<double, double> p2) {
             return sqrt(pow(p1.first-p2.first, 2)+pow(p1.second-p2.second, 2));
         }
@@ -51,21 +49,33 @@ class Problem {
     public:
 
     Problem(
+        int num_customers,
+        int num_depots,
         std::vector<double> max_length,
         std::vector<double> max_load,
         std::vector<std::pair<double, double>> positions,
         std::vector<double> cust_serv_dur,
         std::vector<double> cust_demand
-    ): max_length{max_length}, max_load{max_load}, positions{positions}, cust_serv_dur{cust_serv_dur}, cust_demand{cust_demand} {
+    ): num_customers{num_customers},
+       num_depots{num_depots},
+       max_length{max_length},
+       max_load{max_load},
+       positions{positions},
+       cust_serv_dur{cust_serv_dur},
+       cust_demand{cust_demand} {
 
-        std::cout << "Calculating distance." << std::endl;
+        std::cout << "Calculating distances." << std::endl;
         calculate_distances();
-        std::cout << "Calculated distance." << std::endl;
+        std::cout << "Calculating depot distances." << std::endl;
+        find_depot_distances();
+        std::cout << "Finished constructing problem." << std::endl;
     }
 
-    double get_distance(int from, int to) {
-        return distances[from][to];
-    }
+    double get_distance(int from, int to) {return distances[from][to];}
+
+    int get_num_depots(){return num_depots;}
+
+    int get_num_customers(){return num_customers;}
 };
 
 namespace file {
@@ -92,9 +102,9 @@ namespace file {
     Problem load_problem(std::string file_name) {
         std::vector<std::vector<double>> prob = read_flat(file_name);
 
-        int max_vhcl_pr_depot = prob[0][0];
-        int num_cust = prob[0][1];
-        int num_depots = prob[0][2];
+        int max_vhcl_pr_depot = (int)prob[0][0];
+        int num_cust = (int)prob[0][1];
+        int num_depots = (int)prob[0][2];
 
         std::vector<double> max_length;
         std::vector<double> max_load;
@@ -113,10 +123,35 @@ namespace file {
 
         std::cout << "Finished cleaning data." << std::endl;
 
-        return Problem(max_length, max_load, positions, cust_serv_dur, cust_demand);
+        return Problem(num_cust, num_depots, max_length, max_load, positions, cust_serv_dur, cust_demand);
     }
 }
 
+
+struct Individual {
+    std::vector<std::vector<int>> chromosomes;
+    double fitness;
+
+    Individual (Problem pr) {
+        // TODO: Initialize individual.
+        /**
+        * Ways to initialize:
+        *  - Deterministically/stochastically assign points to depots based on distance.
+        *    - Create routes based on closest point deterministically/stochastically.
+        **/
+
+        chromosomes.resize(pr.get_num_depots());
+        initialize_chromosomes(pr);
+    }
+
+    void initialize_chromosomes(Problem pr) {
+
+    }
+};
+
+class GA {
+
+};
 
 
 int main() {
