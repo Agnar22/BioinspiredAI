@@ -248,22 +248,37 @@ struct Individual {
             /**
              * pt=previous trip, ct=current trip, l=last, sl=second last, f=first
              */
-            // TODO: Edge case if pt consist of only one node.
-            int l_cust_pt = chromosome_trips[depot_num][trip_num-1].back();
-            int sl_cust_pt = chromosome_trips[depot_num][trip_num-1][chromosome_trips[depot_num][trip_num-1].size()-2];
-            int f_cust_ct = chromosome_trips[depot_num][trip_num][0];
-            double dist_l_dep_pt = distances[l_cust_pt][pr.get_num_customers()+depot_num];
-            double dist_sl_l_pt = distances[sl_cust_pt][l_cust_pt];
-            double dist_sl_dep_pt = distances[sl_cust_pt][pr.get_num_customers()+depot_num];
-            double dist_l_pt_f_ct = distances[l_cust_pt][f_cust_ct];
-            double dist_dep_f_ct = distances[pr.get_num_customers()+depot_num][f_cust_ct];
+            if (chromosome_trips[depot_num][trip_num-1].size()!=1) {
+                int l_cust_pt = chromosome_trips[depot_num][trip_num-1].back();
+                int sl_cust_pt = chromosome_trips[depot_num][trip_num-1][chromosome_trips[depot_num][trip_num-1].size()-2];
+                int f_cust_ct = chromosome_trips[depot_num][trip_num][0];
+                double dist_l_dep_pt = distances[l_cust_pt][pr.get_num_customers()+depot_num];
+                double dist_sl_l_pt = distances[sl_cust_pt][l_cust_pt];
+                double dist_sl_dep_pt = distances[sl_cust_pt][pr.get_num_customers()+depot_num];
+                double dist_l_pt_f_ct = distances[l_cust_pt][f_cust_ct];
+                double dist_dep_f_ct = distances[pr.get_num_customers()+depot_num][f_cust_ct];
 
-            if (dist_sl_dep_pt+dist_l_pt_f_ct<dist_sl_l_pt+dist_dep_f_ct) {
-                chromosome_trips[depot_num][trip_num-1].erase(chromosome_trips[depot_num][trip_num-1].end()-1);
-                chromosome_trips[depot_num][trip_num].insert(chromosome_trips[depot_num][trip_num].begin(), l_cust_pt);
-                trip_dists[depot_num][trip_num-1]+=dist_sl_dep_pt-dist_sl_l_pt-dist_l_dep_pt;
-                trip_dists[depot_num][trip_num]+=dist_l_dep_pt+dist_l_pt_f_ct-dist_dep_f_ct;
-                ++trip_num;
+                if (dist_sl_dep_pt+dist_l_pt_f_ct<dist_sl_l_pt+dist_dep_f_ct) {
+                    chromosome_trips[depot_num][trip_num-1].erase(chromosome_trips[depot_num][trip_num-1].end()-1);
+                    chromosome_trips[depot_num][trip_num].insert(chromosome_trips[depot_num][trip_num].begin(), l_cust_pt);
+                    trip_dists[depot_num][trip_num-1]+=dist_sl_dep_pt-dist_sl_l_pt-dist_l_dep_pt;
+                    trip_dists[depot_num][trip_num]+=dist_l_dep_pt+dist_l_pt_f_ct-dist_dep_f_ct;
+                    ++trip_num;
+                }
+            } else {
+                int l_cust_pt = chromosome_trips[depot_num][trip_num-1].back();
+                int f_cust_ct = chromosome_trips[depot_num][trip_num][0];
+                double dist_l_dep_pt = distances[l_cust_pt][pr.get_num_customers()+depot_num];
+                double dist_l_pt_f_ct = distances[l_cust_pt][f_cust_ct];
+                double dist_dep_f_ct = distances[pr.get_num_customers()+depot_num][f_cust_ct];
+
+                if (dist_l_pt_f_ct < dist_l_dep_pt+dist_dep_f_ct) {
+                    chromosome_trips[depot_num][trip_num].insert(chromosome_trips[depot_num][trip_num].begin(), l_cust_pt);
+                    trip_dists[depot_num][trip_num]+=dist_l_dep_pt+dist_l_pt_f_ct-dist_dep_f_ct;
+                    chromosome_trips[depot_num].erase(chromosome_trips[depot_num].begin()+(trip_num)-1);
+                    trip_dists.erase(trip_dists.begin()+(trip_num-1));
+                    ++trip_num;
+                }
             }
         }
 
