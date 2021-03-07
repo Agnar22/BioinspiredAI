@@ -185,8 +185,9 @@ struct Individual {
             double closest_cust_dist = distances[cur_cust][closest_cust];
             double trip_and_ret_dist = trip_dist+closest_cust_dist+distances[closest_cust][pr.get_num_customers()+depot_num];
             double closest_cust_depot_dist = distances[closest_cust][pr.get_num_customers()+depot_num];
+            double ret_dist = distances[cur_cust][pr.get_num_customers()+depot_num];
             // Check that the current trip is not too long.
-            if (/*closest_cust_dist <= closest_cust_depot_dist && */(trip_and_ret_dist <= max_trip_dist || max_trip_dist==0)){
+            if (closest_cust_dist <= ret_dist+closest_cust_depot_dist && (trip_and_ret_dist <= max_trip_dist || max_trip_dist==0)){
                 order.push_back(closest_cust);
                 cur_trip.push_back(closest_cust);
                 trip_dist += distances[cur_cust][closest_cust];
@@ -200,7 +201,6 @@ struct Individual {
 
                 chromosome_trips[depot_num].push_back(cur_trip);
                 cur_trip.clear();
-                double ret_dist = distances[cur_cust][pr.get_num_customers()+depot_num];
                 trip_dist+= ret_dist;
                 trip_dists[depot_num].push_back(trip_dist);
                 trip_dist = 0;
