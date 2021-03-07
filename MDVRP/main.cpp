@@ -377,7 +377,8 @@ class GA {
 
 int main() {
     std::cout << "Hello World!" << std::endl;
-    std::string file_name = "Data files project 2/Testing Data/Data Files/p01";
+    std::string problem = "p12";
+    std::string file_name = "Data files project 2/Testing Data/Data Files/"+problem;
     std::vector<std::vector<double>> problem_file = file::read_flat(file_name);
     std::cout << file_name << std::endl;
 
@@ -386,5 +387,5 @@ int main() {
     std::cout << "distance " <<  curr_prob.get_distance(1,2) << std::endl;
     std::cout << "distance " <<  curr_prob.get_distance(3,2) << std::endl;
     Individual ind(curr_prob);
-    file::write_solution(ind, "p01.res");
+    file::write_solution(ind, problem+".res");
 }
