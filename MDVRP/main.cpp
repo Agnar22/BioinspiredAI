@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <queue>
 #include <numeric>
 #include <random>
 #include <functional>
@@ -294,6 +295,14 @@ struct Individual {
     }
 };
 
+bool operator<(const Individual &a, const Individual &b) {
+    if (a.fitness<1 || a.fitness>100000)
+        throw std::runtime_error("Individual fitness is not within plausible range.");
+    if (b.fitness<1 || b.fitness>100000)
+        throw std::runtime_error("Individual fitness is not within plausible range.");
+    return a.fitness<b.fitness;
+}
+
 namespace file {
     std::vector<std::vector<double>> read_flat(std::string file_name) {
         std::ifstream fs(file_name);
@@ -411,11 +420,33 @@ class GA {
         }
     }
 
+    static std::vector<Individual> get_top_n(std::vector<Individual> &pop, int n) {
+        std::priority_queue<Individual> pq;
+        std::vector<Individual> inds;
+        for (Individual ind:pop)
+            pq.push(ind);
+        for (int pos=0; pos<n; ++pos) {
+            inds.push_back(pq.top());
+            pq.pop();
+        }
+        return inds;
+    }
+
     static std::pair<Individual, Individual> tournament_selection(std::vector<Individual> population, int tournament_size, double stoch){
         /**
          * Tournament selection with tournament_size number of candidates. Selects the two most fit individuals with probability 1-stoch, else it randomly chooses.
          * Remark: The parents might be equal.
          */
+        std::vector<int> tournament_set(tournament_size);
+        std::generate(tournament_set.begin(), tournament_set.end(), rand);
+        if (stoch < (double)(rand()) / (double)(RAND_MAX)) {
+            int parent1=tournament_set[rand()%tournament_size];
+            int parent2=tournament_set[rand()%tournament_size];
+            return std::make_pair(population[parent1], population[parent2]);
+        } else {
+            std::vector<Individual> parents = GA::get_top_n(population, 2);
+            return std::make_pair(parents[0], parents[1]);
+        }
     }
 
     static std::pair<Individual, Individual> best_cost_route_crossover(std::pair<Individual, Individual> &parents) {
