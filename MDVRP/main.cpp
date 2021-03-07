@@ -370,7 +370,75 @@ namespace file {
 
 
 class GA {
+    std::vector<Individual> population;
+    Problem pr;
 
+    GA(Problem &pr, int population_size): pr{pr} {
+        initialize_population(population_size);
+    }
+
+    void initialize_population(int population_size){
+        for (int i=0; i<population_size; ++i)
+            population.push_back(Individual (pr));
+    }
+
+    void simulate(int tourname_size, double stoch_tournament_prob, double prob_rev_mut, double prob_re_routing, double prob_swapping, int inter_depot_swapping) {
+        for (int gen=0; gen<500; ++gen) {
+            std::vector<Individual> child_gen;
+            int num_elites = (int)((double)(population.size())/100.0);
+            while (child_gen.size()<population.size()-num_elites) {
+                // Selection.
+                std::pair<Individual, Individual> parents = GA::tournament_selection(population, tourname_size, stoch_tournament_prob);
+
+                // Recombination.
+                std::pair<Individual, Individual> children = GA::best_cost_route_crossover(parents);
+
+                // Mutation.
+                GA::mutate(children.first, prob_rev_mut, prob_re_routing, prob_swapping, gen%inter_depot_swapping==0);
+                GA::mutate(children.second, prob_rev_mut, prob_re_routing, prob_swapping, gen%inter_depot_swapping==0);
+
+                // Acceptance.
+                child_gen.push_back(children.first);
+                child_gen.push_back(children.second);
+            }
+
+            // Elitism.
+            std::vector<Individual> best_parents = GA::get_top_n(population, num_elites);
+            child_gen.insert(child_gen.end(), best_parents.begin(), best_parents.end());
+
+            // Next generation.
+            population=child_gen;
+        }
+    }
+
+    static std::pair<Individual, Individual> tournament_selection(std::vector<Individual> population, int tournament_size, double stoch){
+        /**
+         * Tournament selection with tournament_size number of candidates. Selects the two most fit individuals with probability 1-stoch, else it randomly chooses.
+         * Remark: The parents might be equal.
+         */
+    }
+
+    static std::pair<Individual, Individual> best_cost_route_crossover(std::pair<Individual, Individual> &parents) {
+
+    }
+
+    void test_fitness() {
+
+    }
+
+    static void intra_depot_mutation(Individual &ind, double prob_rev_mut, double prob_re_routing, double prob_swapping) {
+        // Reversal mutation.
+        // Single customer re-routing.
+        // Swapping (use marginal cost)
+    }
+
+    static void inter_depot_mutation(Individual &ind) {}
+
+    static void mutate(Individual &ind, double prob_rev_mut, double prob_re_routing, double prob_swapping, bool inter_depot_mut) {
+        GA::intra_depot_mutation(ind, prob_rev_mut, prob_re_routing, prob_swapping);
+        if (inter_depot_mut)
+            GA::inter_depot_mutation(ind);
+    }
 };
 
 
