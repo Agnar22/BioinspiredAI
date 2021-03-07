@@ -116,7 +116,7 @@ struct Individual {
     void initialize_chromosomes(Problem &pr) {
         chromosomes.resize(pr.get_num_depots());
         // Assign customers to depots.
-        cust_on_depots = assign_customers_to_depots(pr);
+        cust_on_depots = assign_customers_to_depots(pr, false);
         // Assign routes to depots.
         chromosome_trips.resize(chromosomes.size());
         trip_dists.resize(chromosomes.size());
@@ -126,29 +126,33 @@ struct Individual {
         }
     }
 
-    std::vector<std::vector<int>> assign_customers_to_depots(Problem &pr) {
+    std::vector<std::vector<int>> assign_customers_to_depots(Problem &pr, bool stoch) {
         // Stochastically assign customers to depots based on inverse distanse to depot.
-        // TODO: Implement deterministically.
         std::vector<std::vector<int>> customers_on_depot(pr.get_num_depots());
         for (int cust=0; cust<pr.get_num_customers(); ++cust) {
             std::vector<std::vector<double>> depot_dist = pr.get_depot_distances();
-            std::vector<double> depot_prob;
-            for (double dist:depot_dist[cust]) {
-                depot_prob.push_back(1/std::pow(dist, 10));
-            }
-            double sum=0;
-            std::for_each(depot_prob.begin(), depot_prob.end(), [&] (double n) {sum += n;});
-            for (int depot=0; depot<pr.get_num_depots(); ++depot) {
-                depot_prob[depot]=depot_prob[depot]/sum;
-            }
-            double prob = (double)(rand()) / (double)(RAND_MAX);
-            double cum_sum = 0;
-            for (int pos=0; pos<depot_prob.size(); ++pos) {
-                cum_sum+=depot_prob[pos];
-                if (cum_sum>=prob) {
-                    customers_on_depot[pos].push_back(cust);
-                    break;
+            if (stoch) {
+                std::vector<double> depot_prob;
+                for (double dist:depot_dist[cust]) {
+                    depot_prob.push_back(1/std::pow(dist, 10));
                 }
+                double sum=0;
+                std::for_each(depot_prob.begin(), depot_prob.end(), [&] (double n) {sum += n;});
+                for (int depot=0; depot<pr.get_num_depots(); ++depot) {
+                    depot_prob[depot]=depot_prob[depot]/sum;
+                }
+                double prob = (double)(rand()) / (double)(RAND_MAX);
+                double cum_sum = 0;
+                for (int pos=0; pos<depot_prob.size(); ++pos) {
+                    cum_sum+=depot_prob[pos];
+                    if (cum_sum>=prob) {
+                        customers_on_depot[pos].push_back(cust);
+                        break;
+                    }
+                }
+            } else {
+                int closest_depot = std::min_element(depot_dist[cust].begin(), depot_dist[cust].end()) - depot_dist[cust].begin();
+                customers_on_depot[closest_depot].push_back(cust);
             }
         }
         return customers_on_depot;
