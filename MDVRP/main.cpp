@@ -103,7 +103,6 @@ struct Individual {
     double fitness;
 
     Individual (Problem pr) {
-        // TODO: Initialize individual.
         /**
         * Ways to initialize:
         *  - Deterministically/stochastically assign points to depots based on distance.
