@@ -13,7 +13,15 @@
 #include <math.h>
 #include <limits>
 
-// TODO: representation of individuals.
+// TODO: Finish implementing neccessary methods for simulation.
+// TODO: Create .cpp and header files for Problem, Individual, namespace file, GA.
+// TODO: Check that all edge cases is handled. This should concern the Individual for the most part.
+// TODO: Create "integration tests" on the different problems and unit tests.
+// TODO: Create namespace for different acceptance criterias.
+// TODO: Setup github/workflow.
+// TODO: Hyperparameter search.
+// TODO: Multithreading of different problems and same problem.
+// TODO: Implement different kinds of initialization of individuals.
 // Ideas:
 //  - initialize customer to closest depot (obs. be carefull of edgecase where it is not illegal to have all at for one depot or similar)
 //  - elitism
