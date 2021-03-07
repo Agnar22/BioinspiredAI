@@ -42,7 +42,6 @@ class Problem {
             distances.resize(positions.size(), std::vector<double>(positions.size()));
             for (int from=0; from<positions.size(); ++from) {
                 for (int to=0; to<from; ++to) {
-                    std::cout << "from " << from << " to " << to << std::endl;
                     double dist = euclidian_dist(positions[from], positions[to]);
                     distances[from][to]=dist;
                     distances[to][from]=dist;
@@ -489,9 +488,6 @@ int main() {
     std::cout << file_name << std::endl;
 
     Problem curr_prob = file::load_problem(file_name);
-    std::cout.precision(17);
-    std::cout << "distance " <<  curr_prob.get_distance(1,2) << std::endl;
-    std::cout << "distance " <<  curr_prob.get_distance(3,2) << std::endl;
     Individual ind(curr_prob);
     file::write_solution(ind, problem+".res");
 }
