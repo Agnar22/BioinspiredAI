@@ -4,7 +4,7 @@ import random
 from typing import List
 
 prob_dir = 'Data files project 2/Testing Data/Data Files/'
-sol_dir = 'Data files project 2/Testing Data/Solution files/'
+#sol_dir = 'Data files project 2/Testing Data/Solution files/'
 
 
 def read_problem_file(filename: str) -> List[List[float]]:
@@ -81,6 +81,7 @@ def display_problem_and_solution_from_file(filename: str):
 
 
 if __name__ == '__main__':
-  for filename in os.listdir(prob_dir):
-    #display_problem_from_file(filename)
-    display_problem_and_solution_from_file(filename)
+  sol_dir = 'build/'
+  display_problem_and_solution_from_file("p11")
+  sol_dir = 'Data files project 2/Testing Data/Solution files/'
+  display_problem_and_solution_from_file("p11")

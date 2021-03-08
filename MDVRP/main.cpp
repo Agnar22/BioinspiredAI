@@ -20,8 +20,8 @@
 
 int main() {
     std::cout << "Hello World!" << std::endl;
-    std::string problem = "p12";
-    std::string file_name = "Data files project 2/Testing Data/Data Files/"+problem;
+    std::string problem = "p11";
+    std::string file_name = "../Data files project 2/Testing Data/Data Files/"+problem;
     std::vector<std::vector<double>> problem_file = file::read_flat(file_name);
     std::cout << file_name << std::endl;
 
