@@ -22,6 +22,7 @@ class Individual {
         void setup_trips_backward(int, std::vector<int>, Problem&);
         void remove_customers(std::vector<int>&, Problem&);
         int remove_from_2d_vector(std::vector<std::vector<int>>&, int);
+        void reversal_mutation(int, Problem&);
         void insert_stochastically(int, double, int, Problem&);
         double marginal_cost(int, int, int, Problem&);
         void insert_customer(int, int, int, int, Problem&);

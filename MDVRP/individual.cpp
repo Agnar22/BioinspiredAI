@@ -221,6 +221,29 @@ void Individual::remove_customers(std::vector<int> &custs, Problem &pr) {
     }
 }
 
+void Individual::reversal_mutation(int depot, Problem &pr) {
+    // TODO: The original paper proposes mutation over trips, this is not done here.
+    // Reverses a random part of a trip. Ensures that the new trip does not violate trip length constraints.
+
+    int from, to, trip = rand()%chromosome_trips[depot].size();
+    do {
+        from = rand()%chromosome_trips[depot].size();
+        to = rand()%chromosome_trips[depot].size();
+        if (from>to)
+            std::swap(from, to);
+    } while (from==to);
+
+    double prev_trip_dist = trip_dists[depot][trip];
+    std::reverse(chromosome_trips[depot][trip].begin()+from, chromosome_trips[depot][trip].begin()+to);
+    double new_trip_dist = calculate_trip_distance(chromosome_trips[depot][trip], depot, pr);
+    if (new_trip_dist>pr.get_max_length(depot))
+        std::reverse(chromosome_trips[depot][trip].begin()+from, chromosome_trips[depot][trip].begin()+to);
+    else {
+        trip_dists[depot][trip]=new_trip_dist;
+        fitness+=new_trip_dist-prev_trip_dist;
+    }
+}
+
 void Individual::insert_stochastically(int cust, double prob_greedy, int depot, Problem &pr) {
     std::vector<std::pair<int, int>> insert_positions;
     std::vector<double> insert_costs;

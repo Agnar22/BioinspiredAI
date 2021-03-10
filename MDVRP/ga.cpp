@@ -22,8 +22,8 @@ void GA::simulate(int tourname_size, double stoch_tournament_prob, double prob_r
             std::pair<Individual, Individual> children = GA::best_cost_route_crossover(parents, pr);
 
             // Mutation.
-            GA::mutate(children.first, prob_rev_mut, prob_re_routing, prob_swapping, gen%inter_depot_swapping==0);
-            GA::mutate(children.second, prob_rev_mut, prob_re_routing, prob_swapping, gen%inter_depot_swapping==0);
+            GA::mutate(children.first, prob_rev_mut, prob_re_routing, prob_swapping, gen%inter_depot_swapping==0, pr);
+            GA::mutate(children.second, prob_rev_mut, prob_re_routing, prob_swapping, gen%inter_depot_swapping==0, pr);
 
             // Acceptance.
             child_gen.push_back(children.first);
@@ -94,16 +94,18 @@ void GA::test_fitness() {
 
 }
 
-void GA::intra_depot_mutation(Individual &ind, double prob_rev_mut, double prob_re_routing, double prob_swapping) {
+void GA::mutate(Individual &ind, double prob_rev_mut, double prob_re_routing, double prob_swapping, bool inter_depot_mut, Problem &pr) {
+    GA::intra_depot_mutation(ind, prob_rev_mut, prob_re_routing, prob_swapping, pr);
+    if (inter_depot_mut)
+        GA::inter_depot_mutation(ind);
+}
+
+void GA::intra_depot_mutation(Individual &ind, double prob_rev_mut, double prob_re_routing, double prob_swapping, Problem &pr) {
     // Reversal mutation.
+    if (prob_rev_mut<(double)(rand())/(double)(RAND_MAX));
+        ind.reversal_mutation(rand()%pr.get_num_depots(), pr);
     // Single customer re-routing.
     // Swapping (use marginal cost)
 }
 
 void GA::inter_depot_mutation(Individual &ind) {}
-
-void GA::mutate(Individual &ind, double prob_rev_mut, double prob_re_routing, double prob_swapping, bool inter_depot_mut) {
-    GA::intra_depot_mutation(ind, prob_rev_mut, prob_re_routing, prob_swapping);
-    if (inter_depot_mut)
-        GA::inter_depot_mutation(ind);
-}
