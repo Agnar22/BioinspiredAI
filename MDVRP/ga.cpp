@@ -105,6 +105,8 @@ void GA::intra_depot_mutation(Individual &ind, double prob_rev_mut, double prob_
     if (prob_rev_mut<(double)(rand())/(double)(RAND_MAX));
         ind.reversal_mutation(rand()%pr.get_num_depots(), pr);
     // Single customer re-routing.
+    if (prob_re_routing<(double)(rand())/(double)(RAND_MAX));
+        ind.re_routing_mutation(rand()%pr.get_num_depots(), pr);
     // Swapping (use marginal cost)
 }
 

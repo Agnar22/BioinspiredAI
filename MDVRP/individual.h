@@ -23,6 +23,8 @@ class Individual {
         void remove_customers(std::vector<int>&, Problem&);
         int remove_from_2d_vector(std::vector<std::vector<int>>&, int);
         void reversal_mutation(int, Problem&);
+        void re_routing_mutation(int, Problem&);
+        std::pair<std::vector<double>, std::vector<std::pair<int, int>>> Individual::insert_costs(int, int, Problem&){
         void insert_stochastically(int, double, int, Problem&);
         double marginal_cost(int, int, int, Problem&);
         void insert_customer(int, int, int, int, Problem&);

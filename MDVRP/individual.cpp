@@ -223,6 +223,7 @@ void Individual::remove_customers(std::vector<int> &custs, Problem &pr) {
 
 void Individual::reversal_mutation(int depot, Problem &pr) {
     // TODO: The original paper proposes mutation over trips, this is not done here.
+    // TODO: Can be optimized by only calculating the distances at the end, as these are the ones that are changing.
     // Reverses a random part of a trip. Ensures that the new trip does not violate trip length constraints.
 
     int from, to, trip = rand()%chromosome_trips[depot].size();
@@ -244,7 +245,22 @@ void Individual::reversal_mutation(int depot, Problem &pr) {
     }
 }
 
-void Individual::insert_stochastically(int cust, double prob_greedy, int depot, Problem &pr) {
+void Individual::re_routing_mutation(int depot, Problem &pr) {
+    int trip = rand()%chromosome_trips[depot].size();
+    int cust_pos = rand()%chromosome_trips[depot][trip].size();
+    int cust = chromosome_trips[depot][trip][cust];
+    auto insert_costs_and_position = find_insert_costs(cust, depot, pr);
+    std::vector<double> insert_costs = insert_costs_and_position.first;
+    std::vector<std::pair<int, int>> positions = insert_costs_and_position.second;
+
+    int best_idx = std::min_element(insert_costs.begin(), insert_costs.end())-insert_costs.begin();
+    std::pair<int, int> best_pos = positions[best_idx];
+    std::vector<int> cust_vec = {cust};
+    remove_customers(cust_vec, pr);
+    insert_customer(depot, trip, cust_pos, cust, pr);
+}
+
+std::pair<std::vector<double>, std::vector<std::pair<int, int>>> Individual::find_insert_costs(int cust, int depot, Problem &pr){
     std::vector<std::pair<int, int>> insert_positions;
     std::vector<double> insert_costs;
     double max_length = pr.get_max_length(depot);
@@ -267,6 +283,16 @@ void Individual::insert_stochastically(int cust, double prob_greedy, int depot, 
             }
         }
     }
+    return std::make_pair(insert_costs, insert_positions);
+}
+
+void Individual::insert_stochastically(int cust, double prob_greedy, int depot, Problem &pr) {
+    std::vector<std::pair<int, int>> insert_positions;
+    std::vector<double> insert_costs;
+
+    auto insert_costs_and_position = find_insert_costs(cust, depot, pr);
+    insert_costs = insert_costs_and_position.first;
+    insert_positions = insert_costs_and_position.second;
 
     if (insert_positions.size()==0) {
         if (chromosome_trips[depot].size()>=pr.get_vhcl_pr_depot())
