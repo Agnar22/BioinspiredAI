@@ -1,6 +1,6 @@
 #include "individual.h"
 
-Individual::Individual(Problem pr) {
+Individual::Individual(Problem &pr) {
     /**
     * Ways to initialize:
     *  - Deterministically/stochastically assign points to depots based on distance.
@@ -79,7 +79,7 @@ void Individual::setup_trips_forward(int depot_num, std::vector<int> customers, 
     std::vector<int> cur_trip;
     double trip_dist = 0;
     double trip_load = 0;
-    double max_trip_dist = pr.get_max_length()[depot_num];
+    double max_trip_dist = pr.get_max_length(depot_num);
     int cur_cust = pr.get_num_customers() + depot_num;
     int num_vhcl = 1;
     std::vector<std::vector<double>> distances = pr.get_distances();
@@ -187,6 +187,111 @@ void Individual::setup_trips_backward(int depot_num, std::vector<int> customers,
         }
     }
 }
+
+double calculate_trip_distance(std::vector<int> &customers, int depot, Problem &pr) {
+    if (customers.size()==0)
+        throw std::runtime_error("No customers when calculating trip distance.");
+
+    int first_cust = customers[0];
+    int last_cust = customers[customers.size()-1];
+    int num_cust = pr.get_num_customers();
+    double tot_dist = pr.get_distance(num_cust+depot, first_cust)+pr.get_distance(last_cust, num_cust+depot);
+
+    for (int pos=0; pos<customers.size()-1; ++pos)
+        tot_dist+=pr.get_distance(customers[pos], customers[pos+1]);
+    return tot_dist;
+}
+
+void Individual::remove_customers(std::vector<int> &custs, Problem &pr) {
+    // X chromosomes - not used, remove?
+    // X cust_on_depot
+    // X chromosome_trips
+    // X trip_dists
+    // X trip_loads
+    // X fitness
+    for (int cust:custs) {
+        remove_from_2d_vector(chromosomes, cust);
+        int rmd_pos = remove_from_2d_vector(cust_on_depots, cust);
+        int trip_pos = remove_from_2d_vector(chromosome_trips[rmd_pos], cust);
+        double trip_dist = calculate_trip_distance(chromosome_trips[rmd_pos][trip_pos], rmd_pos, pr);
+        double diff_trip_dist = trip_dist-trip_dists[rmd_pos][trip_pos];
+        trip_dists[rmd_pos][trip_pos] = trip_dist;
+        trip_loads[rmd_pos][trip_pos] -= pr.get_customer_load(cust);
+        fitness += diff_trip_dist;
+    }
+}
+
+void Individual::insert_stochastically(int cust, double prob_greedy, int depot, Problem &pr) {
+    std::vector<std::pair<int, int>> insert_positions;
+    std::vector<double> insert_costs;
+    double max_length = pr.get_max_length(depot);
+    double max_load = pr.get_max_load(depot);
+    int num_cust = pr.get_num_customers();
+
+    for (int trip=0; trip<chromosome_trips[depot].size(); ++trip) {
+        for (int pos_in_trip=0; pos_in_trip<chromosome_trips[depot].size()+1; ++pos_in_trip) {
+            std::vector<int> cur_trip = chromosome_trips[depot][trip];
+            int cust_before = pos_in_trip==0 ? depot+num_cust : cur_trip[pos_in_trip-1];
+            int cust_after = pos_in_trip==chromosome_trips[depot].size() ? depot+num_cust : cur_trip[pos_in_trip];
+
+            double insert_cost = marginal_cost(cust_before, cust_after, cust, pr);
+            double trip_length = insert_cost+trip_dists[depot][trip];
+            double trip_load = pr.get_customer_load(cust)+trip_loads[depot][trip];
+
+            if (trip_length <= max_length && trip_load <= max_load) {
+                insert_positions.push_back(std::make_pair(trip, pos_in_trip));
+                insert_costs.push_back(insert_cost);
+            }
+        }
+    }
+
+    if (insert_positions.size()==0) {
+        if (chromosome_trips[depot].size()>=pr.get_vhcl_pr_depot())
+            throw std::runtime_error("Could not create new tour from customer.");
+        // TODO: Add new route...
+    } else {
+        int chosen_insert_pos;
+        if (true) { // TODO: Generate random number.
+            // TODO: Can optimize by keeping the minimum stored as a variable.
+            chosen_insert_pos = std::min_element(insert_costs.begin(), insert_costs.end())-insert_costs.begin();
+        } else {
+            chosen_insert_pos = rand()%insert_positions.size();
+        }
+        std::pair<int, int> insert_pos = insert_positions[chosen_insert_pos];
+        insert_customer(depot, insert_pos.first, insert_pos.second, cust, pr);
+    }
+}
+
+double Individual::marginal_cost(int cust_from, int cust_to, int cust_added_between, Problem &pr) {
+    return pr.get_distance(cust_from, cust_added_between) + pr.get_distance(cust_added_between, cust_to) - pr.get_distance(cust_from, cust_to);
+}
+
+void Individual::insert_customer(int depot, int trip, int pos_in_trip, int cust, Problem &pr) {
+    // TODO: Check constraints on trip length and load.
+    // TODO: Check that arguments are valid.
+    int num_cust = pr.get_num_customers();
+    std::vector<int> cur_trip = chromosome_trips[depot][trip];
+    int cust_before = pos_in_trip==0 ? depot+num_cust : cur_trip[pos_in_trip-1];
+    int cust_after = pos_in_trip==chromosome_trips[depot].size() ? depot+num_cust : cur_trip[pos_in_trip];
+
+    chromosomes[depot].push_back(cust);
+    cust_on_depots[depot].push_back(cust);
+    chromosome_trips[depot][trip].insert(chromosome_trips[depot][trip].begin()+pos_in_trip, cust);
+    trip_dists[depot][trip] += marginal_cost(cust_before, cust_after, cust, pr);
+    trip_loads[depot][trip] += pr.get_customer_load(cust);
+}
+
+int Individual::remove_from_2d_vector(std::vector<std::vector<int>> &nested_vec, int cust) {
+    // TODO: Can be optimised to search the most promising depot first.
+    for (int idx=0; idx<nested_vec.size(); ++idx) {
+        auto pos = std::find(nested_vec[idx].begin(), nested_vec[idx].end(), cust);
+        if (pos!=nested_vec[idx].end()) {
+            nested_vec[idx].erase(pos);
+            return idx;
+        }
+    }
+}
+
 template <class T>
 std::vector<T> Individual::get_subset(std::vector<T> &vals, std::vector<int> &idxs) {
     std::vector<T> subset(idxs.size());

@@ -63,5 +63,9 @@ int Problem::get_vhcl_pr_depot(){return vhcl_pr_depot;}
 
 double Problem::get_customer_load(int cust){return cust_demand[cust];}
 
-std::vector<double> Problem::get_max_length(){return max_length;}
+std::vector<double> Problem::get_max_lengths(){return max_length;}
+
+double Problem::get_max_length(int depot){return max_length[depot];}
+
+double Problem::get_max_load(int depot){return max_load[depot];}
 

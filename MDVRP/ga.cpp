@@ -19,7 +19,7 @@ void GA::simulate(int tourname_size, double stoch_tournament_prob, double prob_r
             std::pair<Individual, Individual> parents = GA::tournament_selection(population, tourname_size, stoch_tournament_prob);
 
             // Recombination.
-            std::pair<Individual, Individual> children = GA::best_cost_route_crossover(parents);
+            std::pair<Individual, Individual> children = GA::best_cost_route_crossover(parents, pr);
 
             // Mutation.
             GA::mutate(children.first, prob_rev_mut, prob_re_routing, prob_swapping, gen%inter_depot_swapping==0);
@@ -68,8 +68,26 @@ std::pair<Individual, Individual> GA::tournament_selection(std::vector<Individua
     }
 }
 
-std::pair<Individual, Individual> GA::best_cost_route_crossover(std::pair<Individual, Individual> &parents) {
+std::pair<Individual, Individual> GA::best_cost_route_crossover(std::pair<Individual, Individual> &parents, Problem &pr) {
+    int num_depots = parents.first.chromosome_trips.size();
+    int depot = rand()%num_depots;
+    int pf_route = rand()%parents.first.chromosome_trips[depot].size();
+    int ps_route = rand()%parents.second.chromosome_trips[depot].size();
 
+    Individual f_child = parents.first;
+    Individual s_child = parents.second;
+
+    // Remove customers in ps_route from pf_route and vice versa.
+    std::vector<int> rmd_cust_f = parents.second.chromosome_trips[depot][ps_route];
+    std::vector<int> rmd_cust_s = parents.first.chromosome_trips[depot][pf_route];
+    f_child.remove_customers(rmd_cust_f, pr);
+    s_child.remove_customers(rmd_cust_s, pr);
+
+    // Stochastically add customers, that were previously removed, to depot.
+    std::for_each(rmd_cust_f.begin(), rmd_cust_f.end(), [&] (int cust) {f_child.insert_stochastically(cust, 0.8, depot, pr);});
+    std::for_each(rmd_cust_s.begin(), rmd_cust_s.end(), [&] (int cust) {s_child.insert_stochastically(cust, 0.8, depot, pr);});
+
+    return std::make_pair(f_child, s_child);
 }
 
 void GA::test_fitness() {

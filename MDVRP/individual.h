@@ -14,12 +14,17 @@ class Individual {
         std::vector<std::vector<int>> trip_loads;
         double fitness;
 
-        Individual(Problem);
+        Individual(Problem&);
         void initialize_chromosomes(Problem&);
         std::vector<std::vector<int>> assign_customers_to_depots(Problem&, bool);
         void setup_trips(int, std::vector<int>, Problem&);
         void setup_trips_forward(int, std::vector<int>, Problem&);
         void setup_trips_backward(int, std::vector<int>, Problem&);
+        void remove_customers(std::vector<int>&, Problem&);
+        int remove_from_2d_vector(std::vector<std::vector<int>>&, int);
+        void insert_stochastically(int, double, int, Problem&);
+        double marginal_cost(int, int, int, Problem&);
+        void insert_customer(int, int, int, int, Problem&);
         template <class T>
         static std::vector<T> get_subset(std::vector<T>&, std::vector<int>&);
 };

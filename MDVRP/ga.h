@@ -17,7 +17,7 @@ class GA {
         void simulate(int tourname_size, double, double, double, double, int);
         static std::vector<Individual> get_top_n(std::vector<Individual>&, int);
         static std::pair<Individual, Individual> tournament_selection(std::vector<Individual>, int, double);
-        static std::pair<Individual, Individual> best_cost_route_crossover(std::pair<Individual, Individual>&);
+        static std::pair<Individual, Individual> best_cost_route_crossover(std::pair<Individual, Individual>&, Problem&);
         void test_fitness();
         static void intra_depot_mutation(Individual&, double, double, double);
         static void inter_depot_mutation(Individual&);

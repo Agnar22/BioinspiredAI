@@ -28,7 +28,9 @@ class Problem {
         int get_num_customers();
         int get_vhcl_pr_depot();
         double get_customer_load(int);
-        std::vector<double> get_max_length();
+        std::vector<double> get_max_lengths();
+        double get_max_length(int);
+        double get_max_load(int);
 };
 
 #endif
