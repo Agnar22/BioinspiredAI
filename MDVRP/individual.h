@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <vector>
+#include <utility>
 #include "problem.h"
 
 class Individual {
@@ -24,7 +25,7 @@ class Individual {
         int remove_from_2d_vector(std::vector<std::vector<int>>&, int);
         void reversal_mutation(int, Problem&);
         void re_routing_mutation(int, Problem&);
-        std::pair<std::vector<double>, std::vector<std::pair<int, int>>> Individual::insert_costs(int, int, Problem&){
+        std::pair<std::vector<double>, std::vector<std::pair<int, int>>> find_insert_costs(int, int, Problem&);
         void insert_stochastically(int, double, int, Problem&);
         double marginal_cost(int, int, int, Problem&);
         void insert_customer(int, int, int, int, Problem&);
@@ -38,6 +39,6 @@ inline bool operator<(const Individual &a, const Individual&b) {
     if (b.fitness<1 || b.fitness>100000)
         throw std::runtime_error("Individual fitness is not within plausible range.");
     return a.fitness<b.fitness;
-}
+};
 
 #endif
