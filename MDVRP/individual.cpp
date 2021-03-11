@@ -193,7 +193,7 @@ void Individual::setup_trips_backward(int depot_num, std::vector<int> customers,
     }
 }
 
-double calculate_trip_distance(std::vector<int> &customers, int depot, Problem &pr) {
+double Individual::calculate_trip_distance(std::vector<int> &customers, int depot, Problem &pr) {
     if (customers.size()==0)
         throw std::runtime_error("No customers when calculating trip distance.");
 
