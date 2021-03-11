@@ -15,6 +15,7 @@ class Individual {
         std::vector<std::vector<int>> trip_loads;
         double tot_dist;
 
+        Individual(){};
         Individual(Problem&);
         void initialize_chromosomes(Problem&);
         std::vector<std::vector<int>> assign_customers_to_depots(Problem&, bool);

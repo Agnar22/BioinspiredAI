@@ -13,6 +13,19 @@ struct TestProblem: public testing::Test {
         };
 };
 
+struct TestIndividual: public testing::Test {
+    public:
+        Problem pr;
+        Individual ind;
+
+        virtual void SetUp() {
+            std::string problem = "p01";
+            std::string file_name = "../../Data files project 2/Testing Data/Data Files/"+problem;
+            pr = file::load_problem(file_name);
+            ind = Individual(pr);
+        };
+};
+
 TEST_F(TestProblem, load_problem) {
     EXPECT_EQ(pr.get_num_depots(), 4);
     EXPECT_EQ(pr.get_num_customers(), 50);
@@ -30,7 +43,12 @@ TEST_F(TestProblem, load_problem) {
     EXPECT_LT(std::abs(pr.get_distances()[49][50]-39.81205847), 0.001);
 }
 
-TEST(Individual, calculate_trip_distance) {}
+TEST_F(TestIndividual, calculate_trip_distance) {
+    std::vector<int> customers = {0, 10, 30};
+    int depot = 1;
+    double trip_dist = Individual::calculate_trip_distance(customers, depot, pr);
+    EXPECT_LT(std::abs(trip_dist - 84.25123), 0.001);
+}
 
 TEST(Individual, get_fitness) {}
 
