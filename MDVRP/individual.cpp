@@ -1,5 +1,8 @@
 #include "individual.h"
 
+// TODO: Implement remove_customer(int depot, int trip, int cust_pos, Problem &pr)
+// and use it where remove_customers is not suited.
+
 Individual::Individual(Problem &pr) {
     /**
     * Ways to initialize:
@@ -258,6 +261,33 @@ void Individual::re_routing_mutation(int depot, Problem &pr) {
     std::vector<int> cust_vec = {cust};
     remove_customers(cust_vec, pr);
     insert_customer(depot, trip, cust_pos, cust, pr);
+}
+
+void Individual::swapping_mutation(int depot, Problem &pr) {
+    int trip1 = rand()&chromosome_trips[depot].size();
+    int trip2 = rand()&chromosome_trips[depot].size();
+    int cust1_pos, cust2_pos;
+    do {
+        cust1_pos = rand()%chromosome_trips[depot][trip1].size();
+        cust2_pos = rand()%chromosome_trips[depot][trip2].size();
+    } while (trip1==trip2 && cust1_pos==cust2_pos);
+    std::vector<int> cust1 = {chromosome_trips[depot][trip1][cust1_pos]};
+    std::vector<int> cust2 = {chromosome_trips[depot][trip2][cust2_pos]};
+
+    remove_customers(cust1, pr);
+    remove_customers(cust2, pr);
+
+    insert_customer(depot, trip2, cust2_pos, cust1[0], pr);
+    insert_customer(depot, trip1, cust1_pos, cust2[0], pr);
+
+    if (chromosome_trips[depot][trip1][cust1_pos]!=cust2[0] || chromosome_trips[depot][trip2][cust2_pos]!=cust1[0]) {
+        std::cout << "Swapping mutation was not possible, undoing the mutation." << std::endl;
+        remove_customers(cust1, pr);
+        remove_customers(cust2, pr);
+
+        insert_customer(depot, trip1, cust1_pos, cust1[0], pr);
+        insert_customer(depot, trip2, cust2_pos, cust2[0], pr);
+    }
 }
 
 std::pair<std::vector<double>, std::vector<std::pair<int, int>>> Individual::find_insert_costs(int cust, int depot, Problem &pr){

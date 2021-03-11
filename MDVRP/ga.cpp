@@ -108,6 +108,8 @@ void GA::intra_depot_mutation(Individual &ind, double prob_rev_mut, double prob_
     if (prob_re_routing<(double)(rand())/(double)(RAND_MAX));
         ind.re_routing_mutation(rand()%pr.get_num_depots(), pr);
     // Swapping (use marginal cost)
+    if (prob_swapping<(double)(rand())/(double)(RAND_MAX));
+        ind.swapping_mutation(rand()%pr.get_num_depots(), pr);
 }
 
 void GA::inter_depot_mutation(Individual &ind) {}
