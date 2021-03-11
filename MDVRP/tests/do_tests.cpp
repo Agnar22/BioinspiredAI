@@ -51,7 +51,10 @@ TEST_F(TestIndividual, calculate_trip_distance) {
     EXPECT_LT(std::abs(trip_dist - 84.25123), 0.001);
 }
 
-TEST(Individual, get_fitness) {}
+TEST_F(TestIndividual, get_fitness) {
+    ind.tot_dist=100.0;
+    EXPECT_EQ(1.0/100.0, ind.get_fitness());
+}
 
 TEST(Individual, remove_customers) {}
 
