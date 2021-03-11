@@ -2,25 +2,32 @@
 #include "gtest/gtest.h"
 #include "../file.h"
 
-TEST(File, load_problem) {
-    std::string problem = "p01";
-    std::string file_name = "../../Data files project 2/Testing Data/Data Files/"+problem;
-    Problem pr = file::load_problem(file_name);
+struct TestProblem: public testing::Test {
+    public:
+        Problem pr;
 
-    ASSERT_EQ(pr.get_num_depots(), 4);
-    ASSERT_EQ(pr.get_num_customers(), 50);
-    ASSERT_EQ(pr.get_vhcl_pr_depot(), 4);
-    ASSERT_EQ(pr.get_customer_load(10), 19);
-    ASSERT_EQ(pr.get_max_length(2), 0);
-    ASSERT_EQ(pr.get_max_load(2), 80);
-    ASSERT_EQ(pr.get_depot_distances().size(), 50);
-    ASSERT_EQ(pr.get_depot_distances()[0].size(), 4);
-    ASSERT_LT(std::abs(pr.get_depot_distances()[2][2]-34.05877273), 0.001);
-    ASSERT_LT(std::abs(pr.get_distances()[2][52]-34.05877273), 0.001);
-    ASSERT_LT(std::abs(pr.get_depot_distances()[4][1]-14.14213562), 0.001);
-    ASSERT_LT(std::abs(pr.get_distances()[4][51]-14.14213562), 0.001);
-    ASSERT_LT(std::abs(pr.get_depot_distances()[49][0]-39.81205847), 0.001);
-    ASSERT_LT(std::abs(pr.get_distances()[49][50]-39.81205847), 0.001);
+        virtual void SetUp() {
+            std::string problem = "p01";
+            std::string file_name = "../../Data files project 2/Testing Data/Data Files/"+problem;
+            pr = file::load_problem(file_name);
+        };
+};
+
+TEST_F(TestProblem, load_problem) {
+    EXPECT_EQ(pr.get_num_depots(), 4);
+    EXPECT_EQ(pr.get_num_customers(), 50);
+    EXPECT_EQ(pr.get_vhcl_pr_depot(), 4);
+    EXPECT_EQ(pr.get_customer_load(10), 19);
+    EXPECT_EQ(pr.get_max_length(2), 0);
+    EXPECT_EQ(pr.get_max_load(2), 80);
+    EXPECT_EQ(pr.get_depot_distances().size(), 50);
+    EXPECT_EQ(pr.get_depot_distances()[0].size(), 4);
+    EXPECT_LT(std::abs(pr.get_depot_distances()[2][2]-34.05877273), 0.001);
+    EXPECT_LT(std::abs(pr.get_distances()[2][52]-34.05877273), 0.001);
+    EXPECT_LT(std::abs(pr.get_depot_distances()[4][1]-14.14213562), 0.001);
+    EXPECT_LT(std::abs(pr.get_distances()[4][51]-14.14213562), 0.001);
+    EXPECT_LT(std::abs(pr.get_depot_distances()[49][0]-39.81205847), 0.001);
+    EXPECT_LT(std::abs(pr.get_distances()[49][50]-39.81205847), 0.001);
 }
 
 TEST(Individual, calculate_trip_distance) {}

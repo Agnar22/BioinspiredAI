@@ -20,6 +20,7 @@ class Problem {
         double euclidian_dist(std::pair<double, double> p1, std::pair<double, double> p2);
 
     public:
+        Problem(){};
         Problem(int,int,int,std::vector<double>,std::vector<double>,std::vector<std::pair<double, double>>,std::vector<double>,std::vector<double>);
         double get_distance(int, int);
         std::vector<std::vector<double>> get_distances();
