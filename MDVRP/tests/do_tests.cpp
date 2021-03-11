@@ -1,4 +1,5 @@
 #include <cmath>
+#include <utility>
 #include "gtest/gtest.h"
 #include "../file.h"
 
@@ -70,7 +71,27 @@ TEST(Individual, insert_customer) {}
 
 TEST(Individual, get_subset) {}
 
-TEST(Individual, comparison) {}
+TEST_F(TestIndividual, comparison) {
+    Individual ind2;
+    ind.tot_dist=100;
+    ind2.tot_dist=200;
+
+    EXPECT_LT(ind2, ind);
+    std::swap(ind.tot_dist, ind2.tot_dist);
+    EXPECT_LT(ind, ind2);
+
+    std::vector<std::pair<double, double>> illegal_distances = {std::make_pair(0, 100), std::make_pair(20, 0), std::make_pair(100001, 100), std::make_pair(100, 100001)};
+    for (std::pair<double, double> pair_dist: illegal_distances) {
+        try {
+            ind.tot_dist=pair_dist.first;
+            ind2.tot_dist=pair_dist.second;
+            ind<ind2;
+            FAIL();
+        } catch (std::runtime_error r) {
+            SUCCEED();
+        }
+    }
+}
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
