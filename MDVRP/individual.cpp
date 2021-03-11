@@ -112,6 +112,7 @@ void Individual::setup_trips_forward(int depot_num, std::vector<int> customers, 
             trip_dist+= ret_dist;
             trip_dists[depot_num].push_back(trip_dist);
             trip_dist = 0;
+            tot_dist += trip_dists[depot_num].back();
 
             trip_loads[depot_num].push_back(trip_load);
             trip_load = 0;
@@ -124,6 +125,7 @@ void Individual::setup_trips_forward(int depot_num, std::vector<int> customers, 
             double ret_dist = distances[cur_cust][pr.get_num_customers()+depot_num];
             trip_dist+= ret_dist;
             trip_dists[depot_num].push_back(trip_dist);
+            tot_dist += trip_dists[depot_num].back();
             trip_dist = 0;
 
             trip_loads[depot_num].push_back(trip_load);
@@ -198,11 +200,15 @@ double calculate_trip_distance(std::vector<int> &customers, int depot, Problem &
     int first_cust = customers[0];
     int last_cust = customers[customers.size()-1];
     int num_cust = pr.get_num_customers();
-    double tot_dist = pr.get_distance(num_cust+depot, first_cust)+pr.get_distance(last_cust, num_cust+depot);
+    double sum_dist = pr.get_distance(num_cust+depot, first_cust)+pr.get_distance(last_cust, num_cust+depot);
 
     for (int pos=0; pos<customers.size()-1; ++pos)
-        tot_dist+=pr.get_distance(customers[pos], customers[pos+1]);
-    return tot_dist;
+        sum_dist+=pr.get_distance(customers[pos], customers[pos+1]);
+    return sum_dist;
+}
+
+double Individual::get_fitness() {
+    return 1.0/(double)(tot_dist);
 }
 
 void Individual::remove_customers(std::vector<int> &custs, Problem &pr) {
@@ -220,7 +226,7 @@ void Individual::remove_customers(std::vector<int> &custs, Problem &pr) {
         double diff_trip_dist = trip_dist-trip_dists[rmd_pos][trip_pos];
         trip_dists[rmd_pos][trip_pos] = trip_dist;
         trip_loads[rmd_pos][trip_pos] -= pr.get_customer_load(cust);
-        fitness += diff_trip_dist;
+        tot_dist += diff_trip_dist;
     }
 }
 
@@ -244,7 +250,7 @@ void Individual::reversal_mutation(int depot, Problem &pr) {
         std::reverse(chromosome_trips[depot][trip].begin()+from, chromosome_trips[depot][trip].begin()+to);
     else {
         trip_dists[depot][trip]=new_trip_dist;
-        fitness+=new_trip_dist-prev_trip_dist;
+        tot_dist+=new_trip_dist-prev_trip_dist;
     }
 }
 
@@ -358,6 +364,7 @@ void Individual::insert_customer(int depot, int trip, int pos_in_trip, int cust,
     chromosome_trips[depot][trip].insert(chromosome_trips[depot][trip].begin()+pos_in_trip, cust);
     trip_dists[depot][trip] += marginal_cost(cust_before, cust_after, cust, pr);
     trip_loads[depot][trip] += pr.get_customer_load(cust);
+    tot_dist += marginal_cost(cust_before, cust_after, cust, pr);
 }
 
 int Individual::remove_from_2d_vector(std::vector<std::vector<int>> &nested_vec, int cust) {

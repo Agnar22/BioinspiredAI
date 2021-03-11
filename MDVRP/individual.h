@@ -13,7 +13,7 @@ class Individual {
         std::vector<std::vector<std::vector<int>>> chromosome_trips;
         std::vector<std::vector<double>> trip_dists;
         std::vector<std::vector<int>> trip_loads;
-        double fitness;
+        double tot_dist;
 
         Individual(Problem&);
         void initialize_chromosomes(Problem&);
@@ -21,6 +21,7 @@ class Individual {
         void setup_trips(int, std::vector<int>, Problem&);
         void setup_trips_forward(int, std::vector<int>, Problem&);
         void setup_trips_backward(int, std::vector<int>, Problem&);
+        double get_fitness();
         void remove_customers(std::vector<int>&, Problem&);
         int remove_from_2d_vector(std::vector<std::vector<int>>&, int);
         void reversal_mutation(int, Problem&);
@@ -35,11 +36,11 @@ class Individual {
 };
 
 inline bool operator<(const Individual &a, const Individual&b) {
-    if (a.fitness<1 || a.fitness>100000)
+    if (a.tot_dist<1 || a.tot_dist>100000)
         throw std::runtime_error("Individual fitness is not within plausible range.");
-    if (b.fitness<1 || b.fitness>100000)
+    if (b.tot_dist<1 || b.tot_dist>100000)
         throw std::runtime_error("Individual fitness is not within plausible range.");
-    return a.fitness<b.fitness;
+    return a.get_fitness()<b.get_fitness();
 };
 
 #endif
