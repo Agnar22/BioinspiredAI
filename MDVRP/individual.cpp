@@ -87,7 +87,7 @@ void Individual::setup_trips_forward(int depot_num, std::vector<int> customers, 
     int num_vhcl = 1;
     std::vector<std::vector<double>> distances = pr.get_distances();
     while (customers.size() > 0) {
-        std::vector<double> cust_distances = Individual::get_subset<double>(pr.get_distances()[cur_cust], customers);
+        std::vector<double> cust_distances = Individual::get_subset(pr.get_distances()[cur_cust], customers);
         int closest_cust_pos = std::min_element(cust_distances.begin(), cust_distances.end()) - cust_distances.begin();
         int closest_cust = customers[closest_cust_pos];
         double closest_cust_dist = distances[cur_cust][closest_cust];
@@ -378,9 +378,8 @@ int Individual::remove_from_2d_vector(std::vector<std::vector<int>> &nested_vec,
     }
 }
 
-template <class T>
-std::vector<T> Individual::get_subset(std::vector<T> &vals, std::vector<int> &idxs) {
-    std::vector<T> subset(idxs.size());
+std::vector<double> Individual::get_subset(std::vector<double> &vals, std::vector<int> &idxs) {
+    std::vector<double> subset(idxs.size());
     for (int i=0; i<idxs.size(); ++i)
         subset[i]=vals[idxs[i]];
     return subset;

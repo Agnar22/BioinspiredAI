@@ -2,6 +2,9 @@
 #include <utility>
 #include "gtest/gtest.h"
 #include "../file.h"
+#include "../individual.h"
+#include "../problem.h"
+#include "../file.h"
 
 struct TestProblem: public testing::Test {
     public:
@@ -72,7 +75,13 @@ TEST(Individual, marginal_cost) {}
 
 TEST(Individual, insert_customer) {}
 
-TEST(Individual, get_subset) {}
+TEST_F(TestIndividual, get_subset) {
+    std::vector<double> values{10, 20, 30, 25, 15, 7};
+    std::vector<double> subset_of_values{20, 30, 15, 7};
+    std::vector<int> idxs{1, 2, 4, 5};
+
+    EXPECT_EQ(Individual::get_subset(values, idxs), subset_of_values);
+}
 
 TEST_F(TestIndividual, comparison) {
     Individual ind2;

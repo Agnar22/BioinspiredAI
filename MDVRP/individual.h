@@ -33,8 +33,7 @@ class Individual {
         void insert_stochastically(int, double, int, Problem&);
         double marginal_cost(int, int, int, Problem&);
         void insert_customer(int, int, int, int, Problem&);
-        template <class T>
-        static std::vector<T> get_subset(std::vector<T>&, std::vector<int>&);
+        static std::vector<double> get_subset(std::vector<double>&, std::vector<int>&);
 };
 
 inline bool operator<(const Individual &a, const Individual&b) {
