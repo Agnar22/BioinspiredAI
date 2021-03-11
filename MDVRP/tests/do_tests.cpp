@@ -10,7 +10,7 @@ struct TestProblem: public testing::Test {
     public:
         Problem pr;
 
-        virtual void SetUp() {
+        void SetUp() {
             std::string problem = "p01";
             std::string file_name = "../../Data files project 2/Testing Data/Data Files/"+problem;
             pr = file::load_problem(file_name);
@@ -22,13 +22,26 @@ struct TestIndividual: public testing::Test {
         Problem pr;
         Individual ind;
 
-        virtual void SetUp() {
+        void SetUp() {
             std::string problem = "p01";
             std::string file_name = "../../Data files project 2/Testing Data/Data Files/"+problem;
             pr = file::load_problem(file_name);
             ind = Individual(pr);
         };
 };
+
+std::vector<int> dim_flat (std::vector<int> const & v) { return v; }
+
+template <typename T>
+std::vector<int> dim_flat(std::vector<std::vector<T>> const & v) {
+    std::vector<int> ret;
+    for ( auto const & e : v ) {
+        auto s = dim_flat(e);
+        ret.reserve( ret.size() + s.size() );
+        ret.insert( ret.end(), s.cbegin(), s.cend() );
+    }
+    return ret;
+}
 
 TEST_F(TestProblem, load_problem) {
     EXPECT_EQ(pr.get_num_depots(), 4);
@@ -55,11 +68,41 @@ TEST_F(TestIndividual, calculate_trip_distance) {
 }
 
 TEST_F(TestIndividual, get_fitness) {
+    std::cout << "get_fitness total_distance: " << ind.tot_dist << std::endl;
     ind.tot_dist=100.0;
     EXPECT_EQ(1.0/100.0, ind.get_fitness());
 }
 
-TEST(Individual, remove_customers) {}
+TEST_F(TestIndividual, remove_customers) {
+    try {
+        std::vector<int> cust_to_remove{pr.get_num_customers()};
+        ind.remove_customers(cust_to_remove, pr);
+        FAIL();
+    } catch (std::runtime_error r) {
+        SUCCEED();
+    }
+    for (int cust=0; cust<pr.get_num_customers(); ++cust) {
+        std::vector<int> cust_on_depots_f = dim_flat(ind.cust_on_depots);
+        EXPECT_NE(std::find(cust_on_depots_f.begin(), cust_on_depots_f.end(), cust), cust_on_depots_f.end());
+        std::vector<int> chromosome_trips_f = dim_flat(ind.chromosome_trips);
+        EXPECT_NE(std::find(chromosome_trips_f.begin(), chromosome_trips_f.end(), cust), chromosome_trips_f.end());
+
+        std::vector<int> cust_to_remove{cust};
+        ind.remove_customers(cust_to_remove, pr);
+        cust_on_depots_f = dim_flat(ind.cust_on_depots);
+        EXPECT_EQ(std::find(cust_on_depots_f.begin(), cust_on_depots_f.end(), cust), cust_on_depots_f.end());
+        chromosome_trips_f = dim_flat(ind.chromosome_trips);
+        EXPECT_EQ(std::find(chromosome_trips_f.begin(), chromosome_trips_f.end(), cust), chromosome_trips_f.end());
+        // TODO: Check that the change in: trip_dists, trip_loads, tot_dist is correct.
+    }
+    for (int depot=0; depot<pr.get_num_depots(); ++depot) {
+        EXPECT_EQ(ind.cust_on_depots[depot].size(), 0);
+        EXPECT_EQ(ind.chromosome_trips[depot].size(), 0);
+        EXPECT_EQ(ind.trip_dists[depot].size(), 0);
+        EXPECT_EQ(ind.trip_loads[depot].size(), 0);
+    }
+    EXPECT_LT(std::abs(ind.tot_dist), 1e-8);
+}
 
 TEST(Individual, reversal_mutation) {}
 

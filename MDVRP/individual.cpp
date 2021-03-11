@@ -9,16 +9,13 @@ Individual::Individual(Problem &pr) {
     *  - Deterministically/stochastically assign points to depots based on distance.
     *    - Create routes based on closest point deterministically/stochastically.
     **/
-
+    tot_dist=0;
     initialize_chromosomes(pr);
 }
 
 void Individual::initialize_chromosomes(Problem &pr) {
-    chromosomes.resize(pr.get_num_depots());
     // Assign customers to depots.
-    std::cout << "assigning cust to depots" << std::endl;
     cust_on_depots = assign_customers_to_depots(pr, false);
-    std::cout << "cust on depots size: " << cust_on_depots.size() << std::endl;
     for (int depot=0; depot<cust_on_depots.size(); ++depot) {
         for (int cust=0; cust<cust_on_depots[depot].size(); ++cust) {
             std::cout << cust_on_depots[depot][cust] << " ";
@@ -26,9 +23,9 @@ void Individual::initialize_chromosomes(Problem &pr) {
         std::cout << std::endl;
     }
     // Assign routes to depots.
-    chromosome_trips.resize(chromosomes.size());
-    trip_dists.resize(chromosomes.size());
-    trip_loads.resize(chromosomes.size());
+    chromosome_trips.resize(pr.get_num_depots());
+    trip_dists.resize(pr.get_num_depots());
+    trip_loads.resize(pr.get_num_depots());
     for (int depot=0; depot<pr.get_num_depots(); ++depot) {
         setup_trips(depot, cust_on_depots[depot], pr);
     }
@@ -219,14 +216,20 @@ void Individual::remove_customers(std::vector<int> &custs, Problem &pr) {
     // X trip_loads
     // X fitness
     for (int cust:custs) {
-        remove_from_2d_vector(chromosomes, cust);
-        int rmd_pos = remove_from_2d_vector(cust_on_depots, cust);
-        int trip_pos = remove_from_2d_vector(chromosome_trips[rmd_pos], cust);
-        double trip_dist = calculate_trip_distance(chromosome_trips[rmd_pos][trip_pos], rmd_pos, pr);
-        double diff_trip_dist = trip_dist-trip_dists[rmd_pos][trip_pos];
-        trip_dists[rmd_pos][trip_pos] = trip_dist;
-        trip_loads[rmd_pos][trip_pos] -= pr.get_customer_load(cust);
-        tot_dist += diff_trip_dist;
+        int rmd_pos = remove_from_2d_vector(cust_on_depots, cust, false);
+        int num_trips_on_depot = chromosome_trips[rmd_pos].size();
+        int trip_pos = remove_from_2d_vector(chromosome_trips[rmd_pos], cust, true);
+        if (num_trips_on_depot==chromosome_trips[rmd_pos].size()) {
+            double trip_dist = calculate_trip_distance(chromosome_trips[rmd_pos][trip_pos], rmd_pos, pr);
+            double diff_trip_dist = trip_dist-trip_dists[rmd_pos][trip_pos];
+            trip_dists[rmd_pos][trip_pos] = trip_dist;
+            trip_loads[rmd_pos][trip_pos] -= pr.get_customer_load(cust);
+            tot_dist += diff_trip_dist;
+        } else {
+            tot_dist -= trip_dists[rmd_pos][trip_pos];
+            trip_dists[rmd_pos].erase(trip_dists[rmd_pos].begin()+trip_pos);
+            trip_loads[rmd_pos].erase(trip_loads[rmd_pos].begin()+trip_pos);
+        }
     }
 }
 
@@ -359,7 +362,6 @@ void Individual::insert_customer(int depot, int trip, int pos_in_trip, int cust,
     int cust_before = pos_in_trip==0 ? depot+num_cust : cur_trip[pos_in_trip-1];
     int cust_after = pos_in_trip==chromosome_trips[depot].size() ? depot+num_cust : cur_trip[pos_in_trip];
 
-    chromosomes[depot].push_back(cust);
     cust_on_depots[depot].push_back(cust);
     chromosome_trips[depot][trip].insert(chromosome_trips[depot][trip].begin()+pos_in_trip, cust);
     trip_dists[depot][trip] += marginal_cost(cust_before, cust_after, cust, pr);
@@ -367,15 +369,19 @@ void Individual::insert_customer(int depot, int trip, int pos_in_trip, int cust,
     tot_dist += marginal_cost(cust_before, cust_after, cust, pr);
 }
 
-int Individual::remove_from_2d_vector(std::vector<std::vector<int>> &nested_vec, int cust) {
+int Individual::remove_from_2d_vector(std::vector<std::vector<int>> &nested_vec, int cust, bool remove_if_empty) {
     // TODO: Can be optimised to search the most promising depot first.
     for (int idx=0; idx<nested_vec.size(); ++idx) {
         auto pos = std::find(nested_vec[idx].begin(), nested_vec[idx].end(), cust);
         if (pos!=nested_vec[idx].end()) {
             nested_vec[idx].erase(pos);
+            if (nested_vec[idx].size() == 0 && remove_if_empty) {
+                nested_vec.erase(nested_vec.begin()+idx);
+            }
             return idx;
         }
     }
+    throw std::runtime_error("Customer not found in 2d_vector when removing.");
 }
 
 std::vector<double> Individual::get_subset(std::vector<double> &vals, std::vector<int> &idxs) {

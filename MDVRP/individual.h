@@ -8,7 +8,6 @@
 
 class Individual {
     public:
-        std::vector<std::vector<int>> chromosomes;
         std::vector<std::vector<int>> cust_on_depots;
         std::vector<std::vector<std::vector<int>>> chromosome_trips;
         std::vector<std::vector<double>> trip_dists;
@@ -25,7 +24,7 @@ class Individual {
         static double calculate_trip_distance(std::vector<int>&, int, Problem&);
         double get_fitness() const;
         void remove_customers(std::vector<int>&, Problem&);
-        int remove_from_2d_vector(std::vector<std::vector<int>>&, int);
+        int remove_from_2d_vector(std::vector<std::vector<int>>&, int, bool);
         void reversal_mutation(int, Problem&);
         void re_routing_mutation(int, Problem&);
         void swapping_mutation(int, Problem&);
