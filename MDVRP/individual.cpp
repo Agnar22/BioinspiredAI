@@ -207,7 +207,7 @@ double Individual::calculate_trip_distance(std::vector<int> &customers, int depo
     return sum_dist;
 }
 
-double Individual::get_fitness() {
+double Individual::get_fitness() const {
     return 1.0/(double)(tot_dist);
 }
 

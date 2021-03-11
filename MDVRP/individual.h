@@ -22,7 +22,7 @@ class Individual {
         void setup_trips_forward(int, std::vector<int>, Problem&);
         void setup_trips_backward(int, std::vector<int>, Problem&);
         static double calculate_trip_distance(std::vector<int>&, int, Problem&);
-        double get_fitness();
+        double get_fitness() const;
         void remove_customers(std::vector<int>&, Problem&);
         int remove_from_2d_vector(std::vector<std::vector<int>>&, int);
         void reversal_mutation(int, Problem&);
