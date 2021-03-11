@@ -68,7 +68,6 @@ TEST_F(TestIndividual, calculate_trip_distance) {
 }
 
 TEST_F(TestIndividual, get_fitness) {
-    std::cout << "get_fitness total_distance: " << ind.tot_dist << std::endl;
     ind.tot_dist=100.0;
     EXPECT_EQ(1.0/100.0, ind.get_fitness());
 }
