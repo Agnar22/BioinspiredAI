@@ -95,8 +95,9 @@ void GA::test_fitness() {
 }
 
 void GA::mutate(Individual &ind, double prob_rev_mut, double prob_re_routing, double prob_swapping, bool inter_depot_mut, Problem &pr) {
-    GA::intra_depot_mutation(ind, prob_rev_mut, prob_re_routing, prob_swapping, pr);
-    if (inter_depot_mut)
+    if (!inter_depot_mut)
+        GA::intra_depot_mutation(ind, prob_rev_mut, prob_re_routing, prob_swapping, pr);
+    else
         GA::inter_depot_mutation(ind);
 }
 
