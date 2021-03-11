@@ -58,7 +58,7 @@ std::pair<Individual, Individual> GA::tournament_selection(std::vector<Individua
      */
     std::vector<int> tournament_set(tournament_size);
     std::generate(tournament_set.begin(), tournament_set.end(), rand);
-    if (stoch < (double)(rand()) / (double)(RAND_MAX)) {
+    if ((double)(rand()) / (double)(RAND_MAX) < stoch) {
         int parent1=tournament_set[rand()%tournament_size];
         int parent2=tournament_set[rand()%tournament_size];
         return std::make_pair(population[parent1], population[parent2]);
@@ -103,13 +103,13 @@ void GA::mutate(Individual &ind, double prob_rev_mut, double prob_re_routing, do
 
 void GA::intra_depot_mutation(Individual &ind, double prob_rev_mut, double prob_re_routing, double prob_swapping, Problem &pr) {
     // Reversal mutation.
-    if (prob_rev_mut<(double)(rand())/(double)(RAND_MAX));
+    if ((double)(rand())/(double)(RAND_MAX)<prob_rev_mut);
         ind.reversal_mutation(rand()%pr.get_num_depots(), pr);
     // Single customer re-routing.
-    if (prob_re_routing<(double)(rand())/(double)(RAND_MAX));
+    if ((double)(rand())/(double)(RAND_MAX)<prob_re_routing);
         ind.re_routing_mutation(rand()%pr.get_num_depots(), pr);
     // Swapping (use marginal cost)
-    if (prob_swapping<(double)(rand())/(double)(RAND_MAX));
+    if ((double)(rand())/(double)(RAND_MAX)<prob_swapping);
         ind.swapping_mutation(rand()%pr.get_num_depots(), pr);
 }
 
