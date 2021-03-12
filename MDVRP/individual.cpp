@@ -314,7 +314,7 @@ std::pair<std::vector<double>, std::vector<std::pair<int, int>>> Individual::fin
             int cust_before = pos_in_trip==0 ? depot+num_cust : cur_trip[pos_in_trip-1];
             int cust_after = pos_in_trip==chromosome_trips[depot].size() ? depot+num_cust : cur_trip[pos_in_trip];
 
-            double insert_cost = marginal_cost(cust_before, cust_after, cust, pr);
+            double insert_cost = Individual::marginal_cost(cust_before, cust_after, cust, pr);
             double trip_length = insert_cost+trip_dists[depot][trip];
             double trip_load = pr.get_customer_load(cust)+trip_loads[depot][trip];
 
@@ -366,9 +366,9 @@ void Individual::insert_customer(int depot, int trip, int pos_in_trip, int cust,
 
     cust_on_depots[depot].push_back(cust);
     chromosome_trips[depot][trip].insert(chromosome_trips[depot][trip].begin()+pos_in_trip, cust);
-    trip_dists[depot][trip] += marginal_cost(cust_before, cust_after, cust, pr);
+    trip_dists[depot][trip] += Individual::marginal_cost(cust_before, cust_after, cust, pr);
     trip_loads[depot][trip] += pr.get_customer_load(cust);
-    tot_dist += marginal_cost(cust_before, cust_after, cust, pr);
+    tot_dist += Individual::marginal_cost(cust_before, cust_after, cust, pr);
 }
 
 int Individual::remove_from_2d_vector(std::vector<std::vector<int>> &nested_vec, int cust, bool remove_if_empty) {
