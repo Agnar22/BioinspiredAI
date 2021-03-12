@@ -113,7 +113,10 @@ TEST(Individual, find_insert_costs) {}
 
 TEST(Individual, insert_stochastically) {}
 
-TEST(Individual, marginal_cost) {}
+TEST_F(TestIndividual, marginal_cost) {
+    EXPECT_LT(std::abs(Individual::marginal_cost(10, 5, 15, pr)-19.73497714), 1e-8);
+    EXPECT_LT(std::abs(Individual::marginal_cost(51, 15, 10, pr)-0.01887903), 1e-8);
+}
 
 TEST(Individual, insert_customer) {}
 

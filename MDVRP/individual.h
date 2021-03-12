@@ -30,7 +30,7 @@ class Individual {
         void swapping_mutation(int, Problem&);
         std::pair<std::vector<double>, std::vector<std::pair<int, int>>> find_insert_costs(int, int, Problem&);
         void insert_stochastically(int, double, int, Problem&);
-        double marginal_cost(int, int, int, Problem&);
+        static double marginal_cost(int, int, int, Problem&);
         void insert_customer(int, int, int, int, Problem&);
         static std::vector<double> get_subset(std::vector<double>&, std::vector<int>&);
 };
