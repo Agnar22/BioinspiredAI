@@ -92,7 +92,9 @@ void Individual::setup_trips_forward(int depot_num, std::vector<int> customers, 
         double closest_cust_depot_dist = distances[closest_cust][pr.get_num_customers()+depot_num];
         double ret_dist = distances[cur_cust][pr.get_num_customers()+depot_num];
         // Check that the current trip is not too long.
-        if (closest_cust_dist <= ret_dist+closest_cust_depot_dist && (trip_and_ret_dist <= max_trip_dist || max_trip_dist==0)){
+        if (closest_cust_dist <= ret_dist+closest_cust_depot_dist &&
+            (trip_and_ret_dist <= max_trip_dist || max_trip_dist==0) &&
+            trip_load+pr.get_customer_load(closest_cust) <= pr.get_max_load(depot_num)){
             order.push_back(closest_cust);
             cur_trip.push_back(closest_cust);
             trip_dist += distances[cur_cust][closest_cust];

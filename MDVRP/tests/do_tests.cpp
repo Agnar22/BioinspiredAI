@@ -1,5 +1,6 @@
 #include <cmath>
 #include <utility>
+#include <numeric>
 #include "gtest/gtest.h"
 #include "../file.h"
 #include "../individual.h"
@@ -58,6 +59,52 @@ TEST_F(TestProblem, load_problem) {
     EXPECT_LT(std::abs(pr.get_distances()[4][51]-14.14213562), 0.001);
     EXPECT_LT(std::abs(pr.get_depot_distances()[49][0]-39.81205847), 0.001);
     EXPECT_LT(std::abs(pr.get_distances()[49][50]-39.81205847), 0.001);
+}
+
+
+TEST_F(TestIndividual, initializer) {
+    // Check that cust_on_depot is correct.
+    std::vector<int> cust_on_depot_f = dim_flat(ind.cust_on_depots);
+    EXPECT_EQ(cust_on_depot_f.size(), 50);
+    for (int cust=0; cust<50; ++cust)
+        EXPECT_NE(std::find(cust_on_depot_f.begin(), cust_on_depot_f.end(), cust), cust_on_depot_f.end());
+
+    // Check that chromosome_trips is correct.
+    for (int depot=0; depot<4; ++depot) {
+        for (int cust:ind.cust_on_depots[depot]) {
+            std::vector<int> chr_trip_dep_f = dim_flat(ind.chromosome_trips[depot]);
+            EXPECT_NE(std::find(chr_trip_dep_f.begin(), chr_trip_dep_f.end(), cust), chr_trip_dep_f.end());
+        }
+    }
+
+    // Check that trip_dists is correct.
+    for (int depot=0; depot<4; ++depot) {
+        for (int trip=0; trip<ind.chromosome_trips[depot].size(); ++trip) {
+            double correct_trip_dist = Individual::calculate_trip_distance(ind.chromosome_trips[depot][trip], depot, pr);
+            EXPECT_LT(std::abs(ind.trip_dists[depot][trip]-correct_trip_dist), 1e-8);
+            if (pr.get_max_length(depot)!=0)
+                EXPECT_LE(ind.trip_dists[depot][trip], pr.get_max_length(depot));
+        }
+    }
+
+    // Check that trip_loads is correct.
+    for (int depot=0; depot<4; ++depot) {
+        for (int trip=0; trip<ind.chromosome_trips[depot].size(); ++trip) {
+            double tot_trip_load = 0;
+            for (int pos=0; pos<ind.chromosome_trips[depot][trip].size(); ++pos) {
+                tot_trip_load += pr.get_customer_load(ind.chromosome_trips[depot][trip][pos]);
+            }
+            EXPECT_EQ(ind.trip_loads[depot][trip], tot_trip_load);
+            EXPECT_LE(ind.trip_loads[depot][trip], pr.get_max_load(depot));
+        }
+    }
+
+    // Check that tot_dist is correct.
+    double sum_trip_dists = 0;
+    for (std::vector<double> depot_trip_dists:ind.trip_dists)
+        sum_trip_dists += std::accumulate(depot_trip_dists.begin(), depot_trip_dists.end(), 0.0);
+    EXPECT_LT(std::abs(ind.tot_dist-sum_trip_dists), 1e-8);
+
 }
 
 TEST_F(TestIndividual, calculate_trip_distance) {
