@@ -5,6 +5,7 @@
 #include <queue>
 #include "individual.h"
 #include "problem.h"
+#include "file.h"
 
 class GA {
     private:
@@ -12,8 +13,10 @@ class GA {
         Problem pr;
 
     public:
+        GA() {};
         GA(Problem&, int);
         void initialize_population(int);
+        Individual get_individual(int);
         void simulate(int tourname_size, double, double, double, double, int);
         static std::vector<Individual> get_top_n(std::vector<Individual>&, int);
         static std::pair<Individual, Individual> tournament_selection(std::vector<Individual>, int, double);

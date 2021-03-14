@@ -35,12 +35,30 @@ class Individual {
         static std::vector<double> get_subset(std::vector<double>&, std::vector<int>&);
 };
 
-inline bool operator<(const Individual &a, const Individual&b) {
+inline bool operator<(const Individual &a, const Individual &b) {
     if (a.tot_dist<1 || a.tot_dist>100000)
         throw std::runtime_error("Individual fitness is not within plausible range.");
     if (b.tot_dist<1 || b.tot_dist>100000)
         throw std::runtime_error("Individual fitness is not within plausible range.");
     return a.get_fitness()<b.get_fitness();
 };
+
+inline bool operator==(const Individual &a, const Individual &b) {
+    if (a.chromosome_trips.size() != b.chromosome_trips.size())
+        return false;
+
+    for (int depot=0; depot<a.chromosome_trips.size(); ++depot) {
+        if (a.chromosome_trips[depot].size() != b.chromosome_trips[depot].size())
+            return false;
+        for (int trip=0; trip<a.chromosome_trips[depot].size(); ++trip) {
+            if (a.chromosome_trips[depot][trip].size() != b.chromosome_trips[depot][trip].size())
+                return false;
+            for (int pos=0; pos<a.chromosome_trips[depot][trip].size(); ++pos)
+                if (a.chromosome_trips[depot][trip][pos] != b.chromosome_trips[depot][trip][pos])
+                    return false;
+        }
+    }
+    return true;
+}
 
 #endif

@@ -10,6 +10,8 @@ void GA::initialize_population(int population_size){
         population.push_back(Individual (pr));
 }
 
+Individual GA::get_individual(int num) {return population[num];}
+
 void GA::simulate(int tourname_size, double stoch_tournament_prob, double prob_rev_mut, double prob_re_routing, double prob_swapping, int inter_depot_swapping) {
     for (int gen=0; gen<500; ++gen) {
         std::vector<Individual> child_gen;
@@ -103,13 +105,13 @@ void GA::mutate(Individual &ind, double prob_rev_mut, double prob_re_routing, do
 
 void GA::intra_depot_mutation(Individual &ind, double prob_rev_mut, double prob_re_routing, double prob_swapping, Problem &pr) {
     // Reversal mutation.
-    if ((double)(rand())/(double)(RAND_MAX)<prob_rev_mut);
+    if ((double)(rand())/(double)(RAND_MAX)<prob_rev_mut)
         ind.reversal_mutation(rand()%pr.get_num_depots(), pr);
     // Single customer re-routing.
-    if ((double)(rand())/(double)(RAND_MAX)<prob_re_routing);
+    if ((double)(rand())/(double)(RAND_MAX)<prob_re_routing)
         ind.re_routing_mutation(rand()%pr.get_num_depots(), pr);
     // Swapping (use marginal cost)
-    if ((double)(rand())/(double)(RAND_MAX)<prob_swapping);
+    if ((double)(rand())/(double)(RAND_MAX)<prob_swapping)
         ind.swapping_mutation(rand()%pr.get_num_depots(), pr);
 }
 

@@ -242,17 +242,17 @@ void Individual::reversal_mutation(int depot, Problem &pr) {
 
     int from, to, trip = rand()%chromosome_trips[depot].size();
     do {
-        from = rand()%chromosome_trips[depot].size();
-        to = rand()%chromosome_trips[depot].size();
+        from = rand()%chromosome_trips[depot][trip].size();
+        to = rand()%chromosome_trips[depot][trip].size();
         if (from>to)
             std::swap(from, to);
     } while (from==to);
 
     double prev_trip_dist = trip_dists[depot][trip];
-    std::reverse(chromosome_trips[depot][trip].begin()+from, chromosome_trips[depot][trip].begin()+to);
+    std::reverse(chromosome_trips[depot][trip].begin()+from, chromosome_trips[depot][trip].begin()+to+1);
     double new_trip_dist = calculate_trip_distance(chromosome_trips[depot][trip], depot, pr);
-    if (new_trip_dist>pr.get_max_length(depot))
-        std::reverse(chromosome_trips[depot][trip].begin()+from, chromosome_trips[depot][trip].begin()+to);
+    if (new_trip_dist>pr.get_max_length(depot) && pr.get_max_length(depot)!=0)
+        std::reverse(chromosome_trips[depot][trip].begin()+from, chromosome_trips[depot][trip].begin()+to+1);
     else {
         trip_dists[depot][trip]=new_trip_dist;
         tot_dist+=new_trip_dist-prev_trip_dist;
@@ -262,21 +262,23 @@ void Individual::reversal_mutation(int depot, Problem &pr) {
 void Individual::re_routing_mutation(int depot, Problem &pr) {
     int trip = rand()%chromosome_trips[depot].size();
     int cust_pos = rand()%chromosome_trips[depot][trip].size();
-    int cust = chromosome_trips[depot][trip][cust];
+    int cust = chromosome_trips[depot][trip][cust_pos];
+
+    std::vector<int> cust_vec = {cust};
+    remove_customers(cust_vec, pr);
+
     auto insert_costs_and_position = find_insert_costs(cust, depot, pr);
     std::vector<double> insert_costs = insert_costs_and_position.first;
     std::vector<std::pair<int, int>> positions = insert_costs_and_position.second;
 
     int best_idx = std::min_element(insert_costs.begin(), insert_costs.end())-insert_costs.begin();
     std::pair<int, int> best_pos = positions[best_idx];
-    std::vector<int> cust_vec = {cust};
-    remove_customers(cust_vec, pr);
-    insert_customer(depot, trip, cust_pos, cust, pr);
+    insert_customer(depot, best_pos.first, best_pos.second, cust, pr);
 }
 
 void Individual::swapping_mutation(int depot, Problem &pr) {
-    int trip1 = rand()&chromosome_trips[depot].size();
-    int trip2 = rand()&chromosome_trips[depot].size();
+    int trip1 = rand()%chromosome_trips[depot].size();
+    int trip2 = rand()%chromosome_trips[depot].size();
     int cust1_pos, cust2_pos;
     do {
         cust1_pos = rand()%chromosome_trips[depot][trip1].size();

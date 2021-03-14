@@ -229,6 +229,20 @@ TEST_F(TestGA, best_cost_route_crossover) {
     TestIndividual::test_individual(children.second, pr, true);
 }
 
+TEST_F(TestGA, mutate) {
+    for (int pos=0; pos<3; ++pos) {
+        Individual ind = ga.get_individual(42);
+        Individual ind_cp = ind;
+        int attempts = 0;
+        while (ind==ind_cp && attempts<3) {
+            ga.mutate(ind, 1.0*(pos==0), 1.0*(pos==1), 1.0*(pos==2), 0, pr);
+            ++attempts;
+        }
+        TestIndividual::test_individual(ind, pr, true);
+        EXPECT_FALSE(ind==ind_cp);
+    }
+}
+
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
