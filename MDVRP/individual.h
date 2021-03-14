@@ -32,7 +32,6 @@ class Individual {
         void insert_stochastically(int, double, int, Problem&);
         static double marginal_cost(int, int, int, Problem&);
         void insert_customer(int, int, int, int, Problem&);
-        static std::vector<double> get_subset(std::vector<double>&, std::vector<int>&);
 };
 
 inline bool operator<(const Individual &a, const Individual &b) {
@@ -59,6 +58,14 @@ inline bool operator==(const Individual &a, const Individual &b) {
         }
     }
     return true;
+}
+
+template<typename T>
+std::vector<T> get_subset(std::vector<T> &vals, std::vector<int> &idxs) {
+    std::vector<T> subset(idxs.size());
+    for (int i=0; i<idxs.size(); ++i)
+        subset[i]=vals[idxs[i]];
+    return subset;
 }
 
 #endif

@@ -193,7 +193,7 @@ TEST_F(TestIndividual, get_subset) {
     std::vector<double> subset_of_values{20, 30, 15, 7};
     std::vector<int> idxs{1, 2, 4, 5};
 
-    EXPECT_EQ(Individual::get_subset(values, idxs), subset_of_values);
+    EXPECT_EQ(get_subset(values, idxs), subset_of_values);
 }
 
 TEST_F(TestIndividual, comparison) {
