@@ -241,6 +241,8 @@ void Individual::reversal_mutation(int depot, Problem &pr) {
     // Reverses a random part of a trip. Ensures that the new trip does not violate trip length constraints.
 
     int from, to, trip = rand()%chromosome_trips[depot].size();
+    if (chromosome_trips[depot][trip].size())
+        return;
     do {
         from = rand()%chromosome_trips[depot][trip].size();
         to = rand()%chromosome_trips[depot][trip].size();
@@ -284,6 +286,8 @@ void Individual::swapping_mutation(int depot, Problem &pr) {
         cust1_pos = rand()%chromosome_trips[depot][trip1].size();
         cust2_pos = rand()%chromosome_trips[depot][trip2].size();
     } while (trip1==trip2 && cust1_pos==cust2_pos);
+    if (chromosome_trips[depot][trip1].size()==1 || chromosome_trips[depot][trip2].size()==1)
+        return;
     std::vector<int> cust1 = {chromosome_trips[depot][trip1][cust1_pos]};
     std::vector<int> cust2 = {chromosome_trips[depot][trip2][cust2_pos]};
 
