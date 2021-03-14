@@ -59,13 +59,14 @@ std::pair<Individual, Individual> GA::tournament_selection(std::vector<Individua
      * Remark: The parents might be equal.
      */
     std::vector<int> tournament_set(tournament_size);
-    std::generate(tournament_set.begin(), tournament_set.end(), rand);
+    std::generate(tournament_set.begin(), tournament_set.end(), [&] () {return rand()%population.size();});
     if ((double)(rand()) / (double)(RAND_MAX) < stoch) {
         int parent1=tournament_set[rand()%tournament_size];
         int parent2=tournament_set[rand()%tournament_size];
         return std::make_pair(population[parent1], population[parent2]);
     } else {
-        std::vector<Individual> parents = GA::get_top_n(population, 2);
+        std::vector<Individual> candidate_parents = get_subset(population, tournament_set);
+        std::vector<Individual> parents = GA::get_top_n(candidate_parents, 2);
         return std::make_pair(parents[0], parents[1]);
     }
 }
