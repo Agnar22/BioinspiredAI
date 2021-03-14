@@ -4,8 +4,22 @@
 #include "gtest/gtest.h"
 #include "../file.h"
 #include "../individual.h"
+#include "../ga.h"
 #include "../problem.h"
 #include "../file.h"
+
+std::vector<int> dim_flat (std::vector<int> const & v) { return v; }
+
+template <typename T>
+std::vector<int> dim_flat(std::vector<std::vector<T>> const & v) {
+    std::vector<int> ret;
+    for ( auto const & e : v ) {
+        auto s = dim_flat(e);
+        ret.reserve( ret.size() + s.size() );
+        ret.insert( ret.end(), s.cbegin(), s.cend() );
+    }
+    return ret;
+}
 
 struct TestProblem: public testing::Test {
     public:
@@ -29,20 +43,69 @@ struct TestIndividual: public testing::Test {
             pr = file::load_problem(file_name);
             ind = Individual(pr);
         };
+
+        static void test_individual(Individual ind, Problem pr, bool test_cust_on_depot) {
+            // Check that cust_on_depot is correct.
+            std::vector<int> cust_on_depot_f = dim_flat(ind.cust_on_depots);
+            if (test_cust_on_depot) {
+                EXPECT_EQ(cust_on_depot_f.size(), 50);
+                for (int cust=0; cust<50; ++cust)
+                    EXPECT_NE(std::find(cust_on_depot_f.begin(), cust_on_depot_f.end(), cust), cust_on_depot_f.end());
+            }
+
+            // Check that chromosome_trips is correct.
+            for (int depot=0; depot<4; ++depot) {
+                for (int cust:ind.cust_on_depots[depot]) {
+                    std::vector<int> chr_trip_dep_f = dim_flat(ind.chromosome_trips[depot]);
+                    EXPECT_NE(std::find(chr_trip_dep_f.begin(), chr_trip_dep_f.end(), cust), chr_trip_dep_f.end());
+                }
+            }
+
+            // Check that trip_dists is correct.
+            for (int depot=0; depot<4; ++depot) {
+                for (int trip=0; trip<ind.chromosome_trips[depot].size(); ++trip) {
+                    double correct_trip_dist = Individual::calculate_trip_distance(ind.chromosome_trips[depot][trip], depot, pr);
+                    std::cout << depot << " " << trip << " " << ind.trip_dists[depot][trip] << " " << correct_trip_dist << std::endl;
+                    EXPECT_LT(std::abs(ind.trip_dists[depot][trip]-correct_trip_dist), 1e-8);
+                    if (pr.get_max_length(depot)!=0)
+                        EXPECT_LE(ind.trip_dists[depot][trip], pr.get_max_length(depot));
+                }
+            }
+
+            // Check that trip_loads is correct.
+            for (int depot=0; depot<4; ++depot) {
+                for (int trip=0; trip<ind.chromosome_trips[depot].size(); ++trip) {
+                    double tot_trip_load = 0;
+                    for (int pos=0; pos<ind.chromosome_trips[depot][trip].size(); ++pos) {
+                        tot_trip_load += pr.get_customer_load(ind.chromosome_trips[depot][trip][pos]);
+                    }
+                    EXPECT_EQ(ind.trip_loads[depot][trip], tot_trip_load);
+                    EXPECT_LE(ind.trip_loads[depot][trip], pr.get_max_load(depot));
+                }
+            }
+
+            // Check that tot_dist is correct.
+            double sum_trip_dists = 0;
+            for (std::vector<double> depot_trip_dists:ind.trip_dists)
+                sum_trip_dists += std::accumulate(depot_trip_dists.begin(), depot_trip_dists.end(), 0.0);
+            EXPECT_LT(std::abs(ind.tot_dist-sum_trip_dists), 1e-8);
+        }
 };
 
-std::vector<int> dim_flat (std::vector<int> const & v) { return v; }
+struct TestGA: public testing::Test {
 
-template <typename T>
-std::vector<int> dim_flat(std::vector<std::vector<T>> const & v) {
-    std::vector<int> ret;
-    for ( auto const & e : v ) {
-        auto s = dim_flat(e);
-        ret.reserve( ret.size() + s.size() );
-        ret.insert( ret.end(), s.cbegin(), s.cend() );
-    }
-    return ret;
-}
+    public:
+        Problem pr;
+        GA ga;
+
+        void SetUp() {
+            srand(42);
+            std::string problem = "p01";
+            std::string file_name = "../../Data files project 2/Testing Data/Data Files/"+problem;
+            pr = file::load_problem(file_name);
+            ga = GA(pr, 100);
+        };
+};
 
 TEST_F(TestProblem, load_problem) {
     EXPECT_EQ(pr.get_num_depots(), 4);
@@ -61,50 +124,8 @@ TEST_F(TestProblem, load_problem) {
     EXPECT_LT(std::abs(pr.get_distances()[49][50]-39.81205847), 0.001);
 }
 
-
 TEST_F(TestIndividual, initializer) {
-    // Check that cust_on_depot is correct.
-    std::vector<int> cust_on_depot_f = dim_flat(ind.cust_on_depots);
-    EXPECT_EQ(cust_on_depot_f.size(), 50);
-    for (int cust=0; cust<50; ++cust)
-        EXPECT_NE(std::find(cust_on_depot_f.begin(), cust_on_depot_f.end(), cust), cust_on_depot_f.end());
-
-    // Check that chromosome_trips is correct.
-    for (int depot=0; depot<4; ++depot) {
-        for (int cust:ind.cust_on_depots[depot]) {
-            std::vector<int> chr_trip_dep_f = dim_flat(ind.chromosome_trips[depot]);
-            EXPECT_NE(std::find(chr_trip_dep_f.begin(), chr_trip_dep_f.end(), cust), chr_trip_dep_f.end());
-        }
-    }
-
-    // Check that trip_dists is correct.
-    for (int depot=0; depot<4; ++depot) {
-        for (int trip=0; trip<ind.chromosome_trips[depot].size(); ++trip) {
-            double correct_trip_dist = Individual::calculate_trip_distance(ind.chromosome_trips[depot][trip], depot, pr);
-            EXPECT_LT(std::abs(ind.trip_dists[depot][trip]-correct_trip_dist), 1e-8);
-            if (pr.get_max_length(depot)!=0)
-                EXPECT_LE(ind.trip_dists[depot][trip], pr.get_max_length(depot));
-        }
-    }
-
-    // Check that trip_loads is correct.
-    for (int depot=0; depot<4; ++depot) {
-        for (int trip=0; trip<ind.chromosome_trips[depot].size(); ++trip) {
-            double tot_trip_load = 0;
-            for (int pos=0; pos<ind.chromosome_trips[depot][trip].size(); ++pos) {
-                tot_trip_load += pr.get_customer_load(ind.chromosome_trips[depot][trip][pos]);
-            }
-            EXPECT_EQ(ind.trip_loads[depot][trip], tot_trip_load);
-            EXPECT_LE(ind.trip_loads[depot][trip], pr.get_max_load(depot));
-        }
-    }
-
-    // Check that tot_dist is correct.
-    double sum_trip_dists = 0;
-    for (std::vector<double> depot_trip_dists:ind.trip_dists)
-        sum_trip_dists += std::accumulate(depot_trip_dists.begin(), depot_trip_dists.end(), 0.0);
-    EXPECT_LT(std::abs(ind.tot_dist-sum_trip_dists), 1e-8);
-
+    TestIndividual::test_individual(ind, pr, true);
 }
 
 TEST_F(TestIndividual, calculate_trip_distance) {
@@ -139,7 +160,7 @@ TEST_F(TestIndividual, remove_customers) {
         EXPECT_EQ(std::find(cust_on_depots_f.begin(), cust_on_depots_f.end(), cust), cust_on_depots_f.end());
         chromosome_trips_f = dim_flat(ind.chromosome_trips);
         EXPECT_EQ(std::find(chromosome_trips_f.begin(), chromosome_trips_f.end(), cust), chromosome_trips_f.end());
-        // TODO: Check that the change in: trip_dists, trip_loads, tot_dist is correct.
+        TestIndividual::test_individual(ind, pr, false);
     }
     for (int depot=0; depot<pr.get_num_depots(); ++depot) {
         EXPECT_EQ(ind.cust_on_depots[depot].size(), 0);
@@ -195,6 +216,17 @@ TEST_F(TestIndividual, comparison) {
             SUCCEED();
         }
     }
+}
+
+TEST_F(TestGA, best_cost_route_crossover) {
+    Individual l = ga.get_individual(1);
+    Individual r = ga.get_individual(42);
+    auto parents = std::make_pair(l, r);
+
+    auto children = GA::best_cost_route_crossover(parents, pr);
+
+    TestIndividual::test_individual(children.first, pr, true);
+    TestIndividual::test_individual(children.second, pr, true);
 }
 
 int main(int argc, char **argv) {
