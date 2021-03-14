@@ -340,7 +340,11 @@ void Individual::insert_stochastically(int cust, double prob_greedy, int depot, 
     if (insert_positions.size()==0) {
         if (chromosome_trips[depot].size()>=pr.get_vhcl_pr_depot())
             throw std::runtime_error("Could not create new tour from customer.");
-        // TODO: Add new route...
+        cust_on_depots[depot].push_back(cust);
+        chromosome_trips[depot].push_back(std::vector<int>{cust});
+        trip_dists[depot].push_back(2*pr.get_depot_distances()[cust][depot]);
+        trip_loads[depot].push_back(pr.get_customer_load(cust));
+        tot_dist += trip_dists[depot].back();
     } else {
         int chosen_insert_pos;
         if (true) { // TODO: Generate random number.
