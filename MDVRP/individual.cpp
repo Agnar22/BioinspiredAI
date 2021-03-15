@@ -241,7 +241,7 @@ void Individual::reversal_mutation(int depot, Problem &pr) {
     // Reverses a random part of a trip. Ensures that the new trip does not violate trip length constraints.
 
     int from, to, trip = rand()%chromosome_trips[depot].size();
-    if (chromosome_trips[depot][trip].size())
+    if (chromosome_trips[depot][trip].size()==1)
         return;
     do {
         from = rand()%chromosome_trips[depot][trip].size();
