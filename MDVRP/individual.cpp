@@ -273,9 +273,18 @@ void Individual::re_routing_mutation(int depot, Problem &pr) {
     std::vector<double> insert_costs = insert_costs_and_position.first;
     std::vector<std::pair<int, int>> positions = insert_costs_and_position.second;
 
-    int best_idx = std::min_element(insert_costs.begin(), insert_costs.end())-insert_costs.begin();
-    std::pair<int, int> best_pos = positions[best_idx];
-    insert_customer(depot, best_pos.first, best_pos.second, cust, pr);
+    if (insert_costs.size()!=0) {
+        int best_idx = std::min_element(insert_costs.begin(), insert_costs.end())-insert_costs.begin();
+        std::pair<int, int> best_pos = positions[best_idx];
+        insert_customer(depot, best_pos.first, best_pos.second, cust, pr);
+    } else {
+        cust_on_depots[depot].push_back(cust);
+        chromosome_trips[depot].insert(chromosome_trips[depot].begin()+trip, std::vector<int>{cust});
+        double trip_dist = 2*pr.get_distance(cust, pr.get_num_customers()+depot);
+        trip_dists[depot].insert(trip_dists[depot].begin()+trip, trip_dist);
+        trip_loads[depot].insert(trip_loads[depot].begin()+trip, pr.get_customer_load(cust));
+        tot_dist+=trip_dist;
+    }
 }
 
 void Individual::swapping_mutation(int depot, Problem &pr) {
