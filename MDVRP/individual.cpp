@@ -291,20 +291,25 @@ void Individual::swapping_mutation(int depot, Problem &pr) {
     int trip1 = rand()%chromosome_trips[depot].size();
     int trip2 = rand()%chromosome_trips[depot].size();
     int cust1_pos, cust2_pos;
+    if (trip1 == trip2 && chromosome_trips[depot][trip1].size()<=2)
+        return;
+    if (chromosome_trips[depot][trip1].size()==1 || chromosome_trips[depot][trip2].size()==1)
+        return;
+
     do {
         cust1_pos = rand()%chromosome_trips[depot][trip1].size();
         cust2_pos = rand()%chromosome_trips[depot][trip2].size();
     } while (trip1==trip2 && cust1_pos==cust2_pos);
-    if (chromosome_trips[depot][trip1].size()==1 || chromosome_trips[depot][trip2].size()==1)
-        return;
+    if (trip1==trip2 && cust1_pos > cust2_pos)
+        std::swap(cust1_pos, cust2_pos);
     std::vector<int> cust1 = {chromosome_trips[depot][trip1][cust1_pos]};
     std::vector<int> cust2 = {chromosome_trips[depot][trip2][cust2_pos]};
 
     remove_customers(cust1, pr);
     remove_customers(cust2, pr);
 
-    insert_customer(depot, trip2, cust2_pos, cust1[0], pr);
     insert_customer(depot, trip1, cust1_pos, cust2[0], pr);
+    insert_customer(depot, trip2, cust2_pos, cust1[0], pr);
 
     if (chromosome_trips[depot][trip1][cust1_pos]!=cust2[0] || chromosome_trips[depot][trip2][cust2_pos]!=cust1[0]) {
         std::cout << "Swapping mutation was not possible, undoing the mutation." << std::endl;
