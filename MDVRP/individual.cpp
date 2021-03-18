@@ -338,16 +338,17 @@ void Individual::swapping_mutation(int depot, Problem &pr) {
     remove_customers(cust1, pr);
     remove_customers(cust2, pr);
 
-    insert_customer(depot, trip1, cust1_pos, cust2[0], pr);
-    insert_customer(depot, trip2, cust2_pos, cust1[0], pr);
-
-    if (chromosome_trips[depot][trip1][cust1_pos]!=cust2[0] || chromosome_trips[depot][trip2][cust2_pos]!=cust1[0]) {
-        std::cout << "Swapping mutation was not possible, undoing the mutation." << std::endl;
-        remove_customers(cust1, pr);
-        remove_customers(cust2, pr);
-
-        insert_customer(depot, trip1, cust1_pos, cust1[0], pr);
-        insert_customer(depot, trip2, cust2_pos, cust2[0], pr);
+    bool inserted2=false, inserted1=false;
+    inserted2 = insert_customer(depot, trip1, cust1_pos, cust2[0], pr);
+    if (inserted2)
+        inserted1 = insert_customer(depot, trip2, cust2_pos, cust1[0], pr);
+    if (!inserted1) {
+        if (inserted2)
+            remove_customers(cust2, pr);
+        bool undone1 = insert_customer(depot, trip1, cust1_pos, cust1[0], pr);
+        bool undone2 = insert_customer(depot, trip2, cust2_pos, cust2[0], pr);
+        if (!undone1 || !undone2)
+            throw std::runtime_error("Error when inserting customers back in.");
     }
 }
 
@@ -410,19 +411,25 @@ double Individual::marginal_cost(int cust_from, int cust_to, int cust_added_betw
     return pr.get_distance(cust_from, cust_added_between) + pr.get_distance(cust_added_between, cust_to) - pr.get_distance(cust_from, cust_to);
 }
 
-void Individual::insert_customer(int depot, int trip, int pos_in_trip, int cust, Problem &pr) {
-    // TODO: Check constraints on trip length and load.
-    // TODO: Check that arguments are valid.
+bool Individual::insert_customer(int depot, int trip, int pos_in_trip, int cust, Problem &pr) {
     int num_cust = pr.get_num_customers();
     std::vector<int> cur_trip = chromosome_trips[depot][trip];
     int cust_before = pos_in_trip==0 ? depot+num_cust : cur_trip[pos_in_trip-1];
     int cust_after = pos_in_trip==cur_trip.size() ? depot+num_cust : cur_trip[pos_in_trip];
 
+    double marginal_cost = Individual::marginal_cost(cust_before, cust_after, cust, pr);
+
+    if (marginal_cost + trip_dists[depot][trip] > pr.get_max_length(depot) && pr.get_max_length(depot)!=0)
+        return false;
+    if (pr.get_customer_load(cust) + trip_loads[depot][trip] > pr.get_max_load(depot))
+        return false;
+
     cust_on_depots[depot].push_back(cust);
     chromosome_trips[depot][trip].insert(chromosome_trips[depot][trip].begin()+pos_in_trip, cust);
-    trip_dists[depot][trip] += Individual::marginal_cost(cust_before, cust_after, cust, pr);
+    trip_dists[depot][trip] += marginal_cost;
     trip_loads[depot][trip] += pr.get_customer_load(cust);
-    tot_dist += Individual::marginal_cost(cust_before, cust_after, cust, pr);
+    tot_dist += marginal_cost;
+    return true;
 }
 
 int Individual::remove_from_2d_vector(std::vector<std::vector<int>> &nested_vec, int cust, bool remove_if_empty) {

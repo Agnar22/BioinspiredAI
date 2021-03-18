@@ -21,6 +21,7 @@ class Individual {
         void setup_trips(int, std::vector<int>, Problem&);
         void setup_trips_forward(int, std::vector<int>, Problem&);
         void setup_trips_backward(int, std::vector<int>, Problem&);
+        int random_choice(std::vector<double>&);
         static double calculate_trip_distance(std::vector<int>&, int, Problem&);
         double get_fitness() const;
         void remove_customers(std::vector<int>&, Problem&);
@@ -31,7 +32,7 @@ class Individual {
         std::pair<std::vector<double>, std::vector<std::pair<int, int>>> find_insert_costs(int, int, Problem&);
         void insert_stochastically(int, double, int, Problem&);
         static double marginal_cost(int, int, int, Problem&);
-        void insert_customer(int, int, int, int, Problem&);
+        bool insert_customer(int, int, int, int, Problem&);
 };
 
 inline bool operator<(const Individual &a, const Individual &b) {

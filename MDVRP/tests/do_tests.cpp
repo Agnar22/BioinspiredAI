@@ -48,13 +48,13 @@ struct TestIndividual: public testing::Test {
             // Check that cust_on_depot is correct.
             std::vector<int> cust_on_depot_f = dim_flat(ind.cust_on_depots);
             if (test_cust_on_depot) {
-                EXPECT_EQ(cust_on_depot_f.size(), 50);
-                for (int cust=0; cust<50; ++cust)
+                EXPECT_EQ(cust_on_depot_f.size(), pr.get_num_customers());
+                for (int cust=0; cust<pr.get_num_customers(); ++cust)
                     EXPECT_NE(std::find(cust_on_depot_f.begin(), cust_on_depot_f.end(), cust), cust_on_depot_f.end());
             }
 
             // Check that chromosome_trips is correct.
-            for (int depot=0; depot<4; ++depot) {
+            for (int depot=0; depot<pr.get_num_depots(); ++depot) {
                 for (int cust:ind.cust_on_depots[depot]) {
                     std::vector<int> chr_trip_dep_f = dim_flat(ind.chromosome_trips[depot]);
                     EXPECT_NE(std::find(chr_trip_dep_f.begin(), chr_trip_dep_f.end(), cust), chr_trip_dep_f.end());
@@ -62,7 +62,7 @@ struct TestIndividual: public testing::Test {
             }
 
             // Check that trip_dists is correct.
-            for (int depot=0; depot<4; ++depot) {
+            for (int depot=0; depot<pr.get_num_depots(); ++depot) {
                 for (int trip=0; trip<ind.chromosome_trips[depot].size(); ++trip) {
                     double correct_trip_dist = Individual::calculate_trip_distance(ind.chromosome_trips[depot][trip], depot, pr);
                     std::cout << depot << " " << trip << " " << ind.trip_dists[depot][trip] << " " << correct_trip_dist << std::endl;
@@ -73,7 +73,7 @@ struct TestIndividual: public testing::Test {
             }
 
             // Check that trip_loads is correct.
-            for (int depot=0; depot<4; ++depot) {
+            for (int depot=0; depot<pr.get_num_depots(); ++depot) {
                 for (int trip=0; trip<ind.chromosome_trips[depot].size(); ++trip) {
                     double tot_trip_load = 0;
                     for (int pos=0; pos<ind.chromosome_trips[depot][trip].size(); ++pos) {
@@ -101,7 +101,7 @@ struct TestGA: public testing::Test {
 
         void SetUp() {
             srand(42);
-            std::string problem = "p01";
+            std::string problem = "p06";
             std::string file_name = "../../Data files project 2/Testing Data/Data Files/"+problem;
             pr = file::load_problem(file_name);
             num_individuals = 100;
@@ -151,6 +151,7 @@ TEST_F(TestIndividual, remove_customers) {
         SUCCEED();
     }
     for (int cust=0; cust<pr.get_num_customers(); ++cust) {
+        // TODO: Some of this code can be removed as we are using TestIndividual::test_individual(ind, pr)
         std::vector<int> cust_on_depots_f = dim_flat(ind.cust_on_depots);
         EXPECT_NE(std::find(cust_on_depots_f.begin(), cust_on_depots_f.end(), cust), cust_on_depots_f.end());
         std::vector<int> chromosome_trips_f = dim_flat(ind.chromosome_trips);
@@ -231,12 +232,13 @@ TEST_F(TestGA, best_cost_route_crossover) {
     TestIndividual::test_individual(children.second, pr, true);
 }
 
+
 TEST_F(TestGA, mutate) {
     for (int pos=0; pos<3; ++pos) {
         Individual ind = ga.get_individual(42);
         Individual ind_cp = ind;
         int attempts = 0;
-        while (ind==ind_cp && attempts<3) {
+        while (ind==ind_cp && attempts<30) {
             ga.mutate(ind, 1.0*(pos==0), 1.0*(pos==1), 1.0*(pos==2), 0, pr);
             ++attempts;
         }
@@ -247,7 +249,7 @@ TEST_F(TestGA, mutate) {
 
 TEST_F(TestGA, simulate) {
     // TODO: Add test to check that the population/the best improves.
-    ga.simulate(5, 0.1, 0.1, 0.1, 0.0, 10000);
+    ga.simulate(200, 0.1, 0.1, 0.1, 0.0, 10000);
 
     for (int ind=0; ind<num_individuals; ++ind) {
         TestIndividual::test_individual(ga.get_individual(ind), pr, true);
