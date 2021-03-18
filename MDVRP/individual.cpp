@@ -1,4 +1,5 @@
 #include "individual.h"
+#include <numeric>
 
 // TODO: Implement remove_customer(int depot, int trip, int cust_pos, Problem &pr)
 // and use it where remove_customers is not suited.
@@ -39,7 +40,7 @@ std::vector<std::vector<int>> Individual::assign_customers_to_depots(Problem &pr
         if (stoch) {
             std::vector<double> depot_prob;
             for (double dist:depot_dist[cust]) {
-                depot_prob.push_back(1/std::pow(dist, 10));
+                depot_prob.push_back(1/std::pow(dist, 4));
             }
             double sum=0;
             std::for_each(depot_prob.begin(), depot_prob.end(), [&] (double n) {sum += n;});
@@ -70,22 +71,31 @@ void Individual::setup_trips(int depot_num, std::vector<int> customers, Problem 
      * The trip distance and trip load is calculated for each trip.
      */
     setup_trips_forward(depot_num, customers, pr);
-    setup_trips_backward(depot_num, customers, pr);
+    //setup_trips_backward(depot_num, customers, pr);
 }
 
 
-void Individual::setup_trips_forward(int depot_num, std::vector<int> customers, Problem &pr) {
+void Individual::setup_trips_forward(int depot_num, std::vector<int> customers_to_order, Problem &pr) {
     std::vector<int> order;
     std::vector<int> cur_trip;
+    std::vector<int> customers = customers_to_order;
     double trip_dist = 0;
     double trip_load = 0;
     double max_trip_dist = pr.get_max_length(depot_num);
     int cur_cust = pr.get_num_customers() + depot_num;
     int num_vhcl = 1;
     std::vector<std::vector<double>> distances = pr.get_distances();
+    int same_counter = 0;
+    int not_same_counter = 0;
     while (customers.size() > 0) {
         std::vector<double> cust_distances = get_subset(pr.get_distances()[cur_cust], customers);
-        int closest_cust_pos = std::min_element(cust_distances.begin(), cust_distances.end()) - cust_distances.begin();
+        int closest_cust_pos_deterministically = std::min_element(cust_distances.begin(), cust_distances.end()) - cust_distances.begin();
+        std::vector<double> unscaled_cust_probs;
+        for (double dist:cust_distances)
+            unscaled_cust_probs.push_back(std::pow(1.0/dist, 10));
+        int closest_cust_pos = random_choice(unscaled_cust_probs);
+        same_counter+= closest_cust_pos == closest_cust_pos_deterministically;
+        not_same_counter+= closest_cust_pos != closest_cust_pos_deterministically;
         int closest_cust = customers[closest_cust_pos];
         double closest_cust_dist = distances[cur_cust][closest_cust];
         double trip_and_ret_dist = trip_dist+closest_cust_dist+distances[closest_cust][pr.get_num_customers()+depot_num];
@@ -104,6 +114,11 @@ void Individual::setup_trips_forward(int depot_num, std::vector<int> customers, 
         } else if (trip_dist==0) {
             std::cout << "Trip could not be created as first point is too far away: " << closest_cust << " with distance "  << distances[closest_cust][pr.get_num_customers()+depot_num] << std::endl;
         } else {
+            if (trip_load+pr.get_customer_load(closest_cust) > pr.get_max_load(depot_num))
+                std::cout << "Too much load: " << trip_load+pr.get_customer_load(closest_cust) << " " << pr.get_max_load(depot_num) << std::endl;
+            else
+                std::cout << "Too long: " << trip_and_ret_dist << " " << max_trip_dist << std::endl;
+
             cur_cust = pr.get_num_customers() + depot_num;
 
             chromosome_trips[depot_num].push_back(cur_trip);
@@ -133,7 +148,28 @@ void Individual::setup_trips_forward(int depot_num, std::vector<int> customers, 
     }
     if (num_vhcl>pr.get_vhcl_pr_depot()) {
         std::cout << "Too many vehicles for depot: " << depot_num << " with "  << num_vhcl << " vehicles." << std::endl;
+        chromosome_trips[depot_num].clear();
+        tot_dist -= std::accumulate(trip_dists[depot_num].begin(), trip_dists[depot_num].end(), 0.0);
+        trip_dists[depot_num].clear();
+        trip_loads[depot_num].clear();
+        setup_trips_forward(depot_num, customers_to_order, pr);
+    } else {
+        std::cout << "Completed setting up for depot: " << depot_num << " with "  << num_vhcl << " vehicles." << std::endl;
     }
+}
+
+int Individual::random_choice(std::vector<double> &unscaled_probs) {
+    double sum=0;
+    std::for_each(unscaled_probs.begin(), unscaled_probs.end(), [&] (double n) {sum += n;});
+    double prob = (double)(rand()) / (double)(RAND_MAX);
+    double cum_sum = 0;
+    for (int pos=0; pos<unscaled_probs.size(); ++pos) {
+        cum_sum+=unscaled_probs[pos]/sum;
+        if (cum_sum>=prob) {
+            return pos;
+        }
+    }
+    throw std::invalid_argument("Not possible too choose stochastically.");
 }
 
 void Individual::setup_trips_backward(int depot_num, std::vector<int> customers, Problem &pr) {
@@ -211,12 +247,6 @@ double Individual::get_fitness() const {
 }
 
 void Individual::remove_customers(std::vector<int> &custs, Problem &pr) {
-    // X chromosomes - not used, remove?
-    // X cust_on_depot
-    // X chromosome_trips
-    // X trip_dists
-    // X trip_loads
-    // X fitness
     for (int cust:custs) {
         int rmd_pos = remove_from_2d_vector(cust_on_depots, cust, false);
         int num_trips_on_depot = chromosome_trips[rmd_pos].size();
