@@ -4,7 +4,6 @@ std::vector<std::vector<double>> file::read_flat(std::string file_name) {
     std::ifstream fs(file_name);
     std::vector<std::vector<double>> file;
     std::string line;
-    std::cout << "Opening file " << file_name << std::endl;
     while (std::getline(fs, line)) {
         // Remove leading and trailing spaces.
         line = std::regex_replace(line, std::regex("^ +| +$|( ) +"), "$1");
@@ -44,10 +43,6 @@ Problem file::load_problem(std::string file_name) {
     for (int row = num_cust+num_depots+1; row < num_cust+2*num_depots+1; ++row) {
         positions.push_back(std::make_pair(prob[row][1], prob[row][2]));
     }
-
-
-    std::cout << "Finished cleaning data." << std::endl;
-
     return Problem(num_cust, num_depots, max_vhcl_pr_depot, max_length, max_load, positions, cust_serv_dur, cust_demand);
 }
 

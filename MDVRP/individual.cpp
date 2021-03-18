@@ -17,12 +17,7 @@ Individual::Individual(Problem &pr) {
 void Individual::initialize_chromosomes(Problem &pr) {
     // Assign customers to depots.
     cust_on_depots = assign_customers_to_depots(pr, false);
-    for (int depot=0; depot<cust_on_depots.size(); ++depot) {
-        for (int cust=0; cust<cust_on_depots[depot].size(); ++cust) {
-            std::cout << cust_on_depots[depot][cust] << " ";
-        }
-        std::cout << std::endl;
-    }
+
     // Assign routes to depots.
     chromosome_trips.resize(pr.get_num_depots());
     trip_dists.resize(pr.get_num_depots());
@@ -146,6 +141,7 @@ void Individual::setup_trips_forward(int depot_num, std::vector<int> customers_t
             trip_load = 0;
         }
     }
+    //std::cout << same_counter << " " << not_same_counter << std::endl;
     if (num_vhcl>pr.get_vhcl_pr_depot()) {
         std::cout << "Too many vehicles for depot: " << depot_num << " with "  << num_vhcl << " vehicles." << std::endl;
         chromosome_trips[depot_num].clear();
@@ -251,6 +247,7 @@ void Individual::remove_customers(std::vector<int> &custs, Problem &pr) {
         int rmd_pos = remove_from_2d_vector(cust_on_depots, cust, false);
         int num_trips_on_depot = chromosome_trips[rmd_pos].size();
         int trip_pos = remove_from_2d_vector(chromosome_trips[rmd_pos], cust, true);
+
         if (num_trips_on_depot==chromosome_trips[rmd_pos].size()) {
             double trip_dist = calculate_trip_distance(chromosome_trips[rmd_pos][trip_pos], rmd_pos, pr);
             double diff_trip_dist = trip_dist-trip_dists[rmd_pos][trip_pos];
@@ -332,6 +329,7 @@ void Individual::swapping_mutation(int depot, Problem &pr) {
     } while (trip1==trip2 && cust1_pos==cust2_pos);
     if (trip1==trip2 && cust1_pos > cust2_pos)
         std::swap(cust1_pos, cust2_pos);
+
     std::vector<int> cust1 = {chromosome_trips[depot][trip1][cust1_pos]};
     std::vector<int> cust2 = {chromosome_trips[depot][trip2][cust2_pos]};
 

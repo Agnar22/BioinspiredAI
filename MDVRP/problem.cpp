@@ -18,15 +18,11 @@ Problem::Problem(
    cust_serv_dur{cust_serv_dur},
    cust_demand{cust_demand} {
 
-    std::cout << "Calculating distances." << std::endl;
     calculate_distances();
-    std::cout << "Calculating depot distances." << std::endl;
     find_depot_distances();
-    std::cout << "Finished constructing problem." << std::endl;
 }
 
 void Problem::calculate_distances() {
-    std::cout << "positions size " << positions.size() << std::endl;
     distances.resize(positions.size(), std::vector<double>(positions.size()));
     for (int from=0; from<positions.size(); ++from) {
         for (int to=0; to<from; ++to) {
@@ -40,8 +36,6 @@ void Problem::calculate_distances() {
 void Problem::find_depot_distances() {
     for (int customer=0; customer<num_customers; ++customer) {
         depot_distances.push_back(std::vector<double>(distances[customer].begin()+num_customers, distances[customer].end()));
-        std::cout << "Depot distance: " << depot_distances[customer].size() << " " << distances[customer].size() << std::endl; 
-        std::cout << num_customers << std::endl;
     }
 }
 

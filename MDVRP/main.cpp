@@ -19,13 +19,21 @@
 
 
 int main() {
-    std::cout << "Hello World!" << std::endl;
-    std::string problem = "p11";
-    std::string file_name = "../Data files project 2/Testing Data/Data Files/"+problem;
-    std::vector<std::vector<double>> problem_file = file::read_flat(file_name);
-    std::cout << file_name << std::endl;
+    /**
+     *   std::cout << "Hello World!" << std::endl;
+     *   std::string problem = "p11";
+     *   std::string file_name = "../Data files project 2/Testing Data/Data Files/"+problem;
+     *   std::vector<std::vector<double>> problem_file = file::read_flat(file_name);
+     *   std::cout << file_name << std::endl;
+     */
 
+
+    std::string problem = "p03";
+    std::string file_name = "../Data files project 2/Testing Data/Data Files/"+problem;
     Problem curr_prob = file::load_problem(file_name);
     Individual ind(curr_prob);
     file::write_solution(ind, problem+".res");
+    system("pause");
+    GA ga(curr_prob, 400);
+    ga.simulate(5, 0.1, 0.1, 0.1, 0.1, 10000);
 }
