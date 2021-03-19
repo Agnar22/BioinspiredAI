@@ -38,7 +38,20 @@ void GA::simulate(int tourname_size, double stoch_tournament_prob, double prob_r
 
         // Next generation.
         population=child_gen;
+
+        print_population_statistics(population, "p01.res");
     }
+}
+
+void GA::print_population_statistics(std::vector<Individual> &pop, std::string file_name) {
+    int idx_best = std::max_element(pop.begin(), pop.end()) - pop.begin();
+    std::cout << "The best individual has a total distance of: " << pop[idx_best].tot_dist << " and thus a fitness of " << pop[idx_best].get_fitness() << "." << std::endl;
+    file::write_solution(pop[idx_best], file_name);
+    std::cout << "Saved best individual as: " << file_name << "." << std::endl;
+    double tot_sum = 0;
+    for (Individual &ind:pop)
+        tot_sum += ind.tot_dist;
+    std::cout << "The average total distance in the population is: " << tot_sum/(double)(pop.size()) << "." << std::endl;
 }
 
 std::vector<Individual> GA::get_top_n(std::vector<Individual> &pop, int n) {
