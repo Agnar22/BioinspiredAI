@@ -66,7 +66,6 @@ void Individual::setup_trips(int depot_num, std::vector<int> customers, Problem 
      * The trip distance and trip load is calculated for each trip.
      */
     setup_trips_forward(depot_num, customers, pr);
-    //setup_trips_backward(depot_num, customers, pr);
 }
 
 
@@ -166,62 +165,6 @@ int Individual::random_choice(std::vector<double> &unscaled_probs) {
         }
     }
     throw std::invalid_argument("Not possible too choose stochastically.");
-}
-
-void Individual::setup_trips_backward(int depot_num, std::vector<int> customers, Problem &pr) {
-    std::vector<std::vector<double>> distances = pr.get_distances();
-    // Is it better that the back is a new trip?
-    if (chromosome_trips[depot_num].size()<pr.get_vhcl_pr_depot()) {
-        int l_cust_lt = chromosome_trips[depot_num].back().back();
-        int sl_cust_lt = chromosome_trips[depot_num].back()[chromosome_trips[depot_num].back().size()-2];
-        double dist_l_dep_pt = distances[l_cust_lt][pr.get_num_customers()+depot_num];
-        double dist_sl_l_pt = distances[sl_cust_lt][l_cust_lt];
-        double dist_sl_dep_pt = distances[sl_cust_lt][pr.get_num_customers()+depot_num];
-
-        if (2*dist_l_dep_pt+dist_sl_dep_pt<dist_sl_l_pt+dist_l_dep_pt) {
-            chromosome_trips[depot_num].back().erase(chromosome_trips[depot_num].back().end()-1);
-            chromosome_trips[depot_num].push_back(std::vector<int>{l_cust_lt});
-            trip_dists[depot_num].back()+=dist_sl_dep_pt-dist_sl_l_pt-dist_l_dep_pt;
-            trip_dists[depot_num].push_back(2*dist_l_dep_pt);
-        }
-    }
-    for (int trip_num=chromosome_trips[depot_num].size()-1; trip_num>0; --trip_num) {
-        /**
-         * pt=previous trip, ct=current trip, l=last, sl=second last, f=first
-         */
-        if (chromosome_trips[depot_num][trip_num-1].size()!=1) {
-            int l_cust_pt = chromosome_trips[depot_num][trip_num-1].back();
-            int sl_cust_pt = chromosome_trips[depot_num][trip_num-1][chromosome_trips[depot_num][trip_num-1].size()-2];
-            int f_cust_ct = chromosome_trips[depot_num][trip_num][0];
-            double dist_l_dep_pt = distances[l_cust_pt][pr.get_num_customers()+depot_num];
-            double dist_sl_l_pt = distances[sl_cust_pt][l_cust_pt];
-            double dist_sl_dep_pt = distances[sl_cust_pt][pr.get_num_customers()+depot_num];
-            double dist_l_pt_f_ct = distances[l_cust_pt][f_cust_ct];
-            double dist_dep_f_ct = distances[pr.get_num_customers()+depot_num][f_cust_ct];
-
-            if (dist_sl_dep_pt+dist_l_pt_f_ct<dist_sl_l_pt+dist_dep_f_ct) {
-                chromosome_trips[depot_num][trip_num-1].erase(chromosome_trips[depot_num][trip_num-1].end()-1);
-                chromosome_trips[depot_num][trip_num].insert(chromosome_trips[depot_num][trip_num].begin(), l_cust_pt);
-                trip_dists[depot_num][trip_num-1]+=dist_sl_dep_pt-dist_sl_l_pt-dist_l_dep_pt;
-                trip_dists[depot_num][trip_num]+=dist_l_dep_pt+dist_l_pt_f_ct-dist_dep_f_ct;
-                ++trip_num;
-            }
-        } else {
-            int l_cust_pt = chromosome_trips[depot_num][trip_num-1].back();
-            int f_cust_ct = chromosome_trips[depot_num][trip_num][0];
-            double dist_l_dep_pt = distances[l_cust_pt][pr.get_num_customers()+depot_num];
-            double dist_l_pt_f_ct = distances[l_cust_pt][f_cust_ct];
-            double dist_dep_f_ct = distances[pr.get_num_customers()+depot_num][f_cust_ct];
-
-            if (dist_l_pt_f_ct < dist_l_dep_pt+dist_dep_f_ct) {
-                chromosome_trips[depot_num][trip_num].insert(chromosome_trips[depot_num][trip_num].begin(), l_cust_pt);
-                trip_dists[depot_num][trip_num]+=dist_l_dep_pt+dist_l_pt_f_ct-dist_dep_f_ct;
-                chromosome_trips[depot_num].erase(chromosome_trips[depot_num].begin()+(trip_num)-1);
-                trip_dists.erase(trip_dists.begin()+(trip_num-1));
-                ++trip_num;
-            }
-        }
-    }
 }
 
 double Individual::calculate_trip_distance(std::vector<int> &customers, int depot, Problem &pr) {

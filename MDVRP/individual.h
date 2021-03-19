@@ -20,7 +20,6 @@ class Individual {
         std::vector<std::vector<int>> assign_customers_to_depots(Problem&, bool);
         void setup_trips(int, std::vector<int>, Problem&);
         void setup_trips_forward(int, std::vector<int>, Problem&);
-        void setup_trips_backward(int, std::vector<int>, Problem&);
         int random_choice(std::vector<double>&);
         static double calculate_trip_distance(std::vector<int>&, int, Problem&);
         double get_fitness() const;
