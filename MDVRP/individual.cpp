@@ -16,22 +16,41 @@ Individual::Individual(Problem &pr) {
 
 void Individual::initialize_chromosomes(Problem &pr) {
     // Assign customers to depots.
-    cust_on_depots = assign_customers_to_depots(pr, false);
+    // TODO: Make stoch. assignment of customers work... (now it causes crash)
+    // TODO: Make sure that no depot get more customer load than it can manage.
+    bool initialized = false;
+    while (!initialized) {
+        try {
+            cust_on_depots = assign_customers_to_depots(pr, true);
 
-    // Assign routes to depots.
-    chromosome_trips.resize(pr.get_num_depots());
-    trip_dists.resize(pr.get_num_depots());
-    trip_loads.resize(pr.get_num_depots());
-    for (int depot=0; depot<pr.get_num_depots(); ++depot) {
-        setup_trips(depot, cust_on_depots[depot], pr);
+            // Assign routes to depots.
+            chromosome_trips.resize(pr.get_num_depots());
+            trip_dists.resize(pr.get_num_depots());
+            trip_loads.resize(pr.get_num_depots());
+            for (int depot=0; depot<pr.get_num_depots(); ++depot) {
+                setup_trips(depot, cust_on_depots[depot], pr);
+            }
+            initialized = true;
+        } catch (std::invalid_argument e) {
+            std::cout << e.what() << std::endl;
+            reset();
+        }
     }
 }
 
+void Individual::reset() {
+    cust_on_depots.clear();
+    chromosome_trips.clear();
+    trip_dists.clear();
+    trip_loads.clear();
+    tot_dist=0;
+}
+
 std::vector<std::vector<int>> Individual::assign_customers_to_depots(Problem &pr, bool stoch) {
-    // Stochastically assign customers to depots based on inverse distanse to depot.
     std::vector<std::vector<int>> customers_on_depot(pr.get_num_depots());
     for (int cust=0; cust<pr.get_num_customers(); ++cust) {
         std::vector<std::vector<double>> depot_dist = pr.get_depot_distances();
+        // Stochastically assign customers to depots based on inverse distanse to depot.
         if (stoch) {
             std::vector<double> depot_prob;
             for (double dist:depot_dist[cust]) {
@@ -65,11 +84,11 @@ void Individual::setup_trips(int depot_num, std::vector<int> customers, Problem 
      * A trip is ended if it is shorter to start a new or the maximum trip distance is exceeded.
      * The trip distance and trip load is calculated for each trip.
      */
-    setup_trips_forward(depot_num, customers, pr);
+    setup_trips_forward(0, depot_num, customers, pr);
 }
 
 
-void Individual::setup_trips_forward(int depot_num, std::vector<int> customers_to_order, Problem &pr) {
+void Individual::setup_trips_forward(int attempt_num, int depot_num, std::vector<int> customers_to_order, Problem &pr) {
     std::vector<int> order;
     std::vector<int> cur_trip;
     std::vector<int> customers = customers_to_order;
@@ -107,6 +126,7 @@ void Individual::setup_trips_forward(int depot_num, std::vector<int> customers_t
             cur_cust = closest_cust;
         } else if (trip_dist==0) {
             std::cout << "Trip could not be created as first point is too far away: " << closest_cust << " with distance "  << distances[closest_cust][pr.get_num_customers()+depot_num] << std::endl;
+            throw std::invalid_argument("Trip could not be created as first point is too far away");
         } else {
             if (trip_load+pr.get_customer_load(closest_cust) > pr.get_max_load(depot_num))
                 std::cout << "Too much load: " << trip_load+pr.get_customer_load(closest_cust) << " " << pr.get_max_load(depot_num) << std::endl;
@@ -143,11 +163,13 @@ void Individual::setup_trips_forward(int depot_num, std::vector<int> customers_t
     //std::cout << same_counter << " " << not_same_counter << std::endl;
     if (num_vhcl>pr.get_vhcl_pr_depot()) {
         std::cout << "Too many vehicles for depot: " << depot_num << " with "  << num_vhcl << " vehicles." << std::endl;
+        if (attempt_num==3)
+            throw std::invalid_argument("Failed more than three times to set up. Giving up...");
         chromosome_trips[depot_num].clear();
         tot_dist -= std::accumulate(trip_dists[depot_num].begin(), trip_dists[depot_num].end(), 0.0);
         trip_dists[depot_num].clear();
         trip_loads[depot_num].clear();
-        setup_trips_forward(depot_num, customers_to_order, pr);
+        setup_trips_forward(attempt_num+1, depot_num, customers_to_order, pr);
     } else {
         std::cout << "Completed setting up for depot: " << depot_num << " with "  << num_vhcl << " vehicles." << std::endl;
     }
