@@ -54,7 +54,11 @@ struct TestIndividual: public testing::Test {
             }
 
             // Check that chromosome_trips is correct.
+            if (test_cust_on_depot)
+                EXPECT_EQ(dim_flat(ind.chromosome_trips).size(), pr.get_num_customers());
             for (int depot=0; depot<pr.get_num_depots(); ++depot) {
+                EXPECT_LE(ind.chromosome_trips[depot].size(), pr.get_vhcl_pr_depot());
+                EXPECT_EQ(dim_flat(ind.chromosome_trips[depot]).size(), ind.cust_on_depots[depot].size());
                 for (int cust:ind.cust_on_depots[depot]) {
                     std::vector<int> chr_trip_dep_f = dim_flat(ind.chromosome_trips[depot]);
                     EXPECT_NE(std::find(chr_trip_dep_f.begin(), chr_trip_dep_f.end(), cust), chr_trip_dep_f.end());
@@ -228,6 +232,8 @@ TEST_F(TestGA, best_cost_route_crossover) {
 
     auto children = GA::best_cost_route_crossover(parents, pr);
 
+    TestIndividual::test_individual(l, pr, true);
+    TestIndividual::test_individual(r, pr, true);
     TestIndividual::test_individual(children.first, pr, true);
     TestIndividual::test_individual(children.second, pr, true);
 }
