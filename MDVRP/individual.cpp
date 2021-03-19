@@ -358,10 +358,10 @@ std::pair<std::vector<double>, std::vector<std::pair<int, int>>> Individual::fin
     int num_cust = pr.get_num_customers();
 
     for (int trip=0; trip<chromosome_trips[depot].size(); ++trip) {
-        for (int pos_in_trip=0; pos_in_trip<chromosome_trips[depot][trip].size(); ++pos_in_trip) {
+        for (int pos_in_trip=0; pos_in_trip <= chromosome_trips[depot][trip].size(); ++pos_in_trip) {
             std::vector<int> cur_trip = chromosome_trips[depot][trip];
             int cust_before = pos_in_trip==0 ? depot+num_cust : cur_trip[pos_in_trip-1];
-            int cust_after = pos_in_trip==chromosome_trips[depot].size() ? depot+num_cust : cur_trip[pos_in_trip];
+            int cust_after = pos_in_trip==chromosome_trips[depot][trip].size() ? depot+num_cust : cur_trip[pos_in_trip];
 
             double insert_cost = Individual::marginal_cost(cust_before, cust_after, cust, pr);
             double trip_length = insert_cost+trip_dists[depot][trip];
@@ -423,7 +423,10 @@ bool Individual::insert_customer(int depot, int trip, int pos_in_trip, int cust,
         return false;
 
     cust_on_depots[depot].push_back(cust);
-    chromosome_trips[depot][trip].insert(chromosome_trips[depot][trip].begin()+pos_in_trip, cust);
+    if (pos_in_trip < chromosome_trips[depot][trip].size())
+        chromosome_trips[depot][trip].insert(chromosome_trips[depot][trip].begin()+pos_in_trip, cust);
+    else
+        chromosome_trips[depot][trip].push_back(cust);
     trip_dists[depot][trip] += marginal_cost;
     trip_loads[depot][trip] += pr.get_customer_load(cust);
     tot_dist += marginal_cost;

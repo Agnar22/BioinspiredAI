@@ -247,9 +247,15 @@ TEST_F(TestGA, mutate) {
     }
 }
 
+TEST_F(TestGA, initialized_population) {
+    for (int ind=0; ind<num_individuals; ++ind) {
+        TestIndividual::test_individual(ga.get_individual(ind), pr, true);
+    }
+}
+
 TEST_F(TestGA, simulate) {
     // TODO: Add test to check that the population/the best improves.
-    ga.simulate(200, 0.1, 0.1, 0.1, 0.0, 10000);
+    ga.simulate(5, 0.1, 0.1, 1.0, 0.1, 10000);
 
     for (int ind=0; ind<num_individuals; ++ind) {
         TestIndividual::test_individual(ga.get_individual(ind), pr, true);
