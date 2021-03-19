@@ -6,14 +6,17 @@ GA::GA(Problem &pr, int population_size): pr{pr} {
 }
 
 void GA::initialize_population(int population_size){
-    for (int i=0; i<population_size; ++i)
+    for (int i=0; i<population_size; ++i) {
         population.push_back(Individual (pr));
+        std::cout << "===================== " << i+1 << " vehicles created =====================" << std::endl;
+    }
 }
 
 Individual GA::get_individual(int num) {return population[num];}
 
 void GA::simulate(int tourname_size, double stoch_tournament_prob, double prob_rev_mut, double prob_re_routing, double prob_swapping, int inter_depot_swapping) {
-    for (int gen=0; gen<500; ++gen) {
+    for (int gen=0; gen<200; ++gen) {
+        std::cout << "Generation " << gen << std::endl;
         std::vector<Individual> child_gen;
         int num_elites = (int)((double)(population.size())/100.0);
         while (child_gen.size()<population.size()-num_elites) {
