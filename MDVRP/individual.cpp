@@ -48,6 +48,7 @@ void Individual::reset() {
 
 std::vector<std::vector<int>> Individual::assign_customers_to_depots(Problem &pr, bool stoch) {
     std::vector<std::vector<int>> customers_on_depot(pr.get_num_depots());
+    std::vector<int> depot_loads(pr.get_num_depots(), 0);
     for (int cust=0; cust<pr.get_num_customers(); ++cust) {
         std::vector<std::vector<double>> depot_dist = pr.get_depot_distances();
         // Stochastically assign customers to depots based on inverse distanse to depot.
@@ -67,12 +68,58 @@ std::vector<std::vector<int>> Individual::assign_customers_to_depots(Problem &pr
                 cum_sum+=depot_prob[pos];
                 if (cum_sum>=prob) {
                     customers_on_depot[pos].push_back(cust);
+                    depot_loads[pos] += pr.get_customer_load(cust);
                     break;
                 }
             }
         } else {
+            // Deterministically assign customer to closest depot.
             int closest_depot = std::min_element(depot_dist[cust].begin(), depot_dist[cust].end()) - depot_dist[cust].begin();
             customers_on_depot[closest_depot].push_back(cust);
+            depot_loads[closest_depot] += pr.get_customer_load(cust);
+        }
+    }
+
+    // Make sure that no depot gets assigned more total load than its vehicles can carry.
+    bool sufficient_capacity = false;
+    while (!sufficient_capacity) {
+        sufficient_capacity = true;
+        for (int depot=0; depot<pr.get_num_depots(); ++depot) {
+            if (depot_loads[depot]<=pr.get_max_load(depot)*pr.get_vhcl_pr_depot())
+                continue;
+            sufficient_capacity = false;
+
+            std::vector<int> depot_for_cust(pr.get_num_customers());
+            for (int cur_depot=0; cur_depot<pr.get_num_depots(); ++cur_depot) {
+                for (int cur_cust:customers_on_depot[cur_depot]) {
+                    depot_for_cust[cur_cust] = cur_depot;
+                }
+            }
+            std::vector<int> all_customers(pr.get_num_customers());
+            std::iota(all_customers.begin(), all_customers.end(), 0);
+            std::vector<int> other_custs = remove_subset<int>(all_customers, customers_on_depot[depot]);
+            std::vector<double> inv_dist;
+            std::vector<int> chosen_depot;
+            for (int cust:customers_on_depot[depot]) {
+                std::vector<double> distances_to_other_custs = get_subset<double>(pr.get_distances()[cust], other_custs);
+                int closest_cust_pos = std::min_element(distances_to_other_custs.begin(), distances_to_other_custs.end())-distances_to_other_custs.begin();
+                int closest_cust = other_custs[closest_cust_pos];
+                inv_dist.push_back(std::pow(1/pr.get_distance(cust, closest_cust), 4));
+                chosen_depot.push_back(depot_for_cust[closest_cust]);
+            }
+
+            while (depot_loads[depot]>pr.get_max_load(depot)*pr.get_vhcl_pr_depot()) {
+                int chosen_pos = random_choice(inv_dist);
+                int chosen_cust = customers_on_depot[depot][chosen_pos];
+                int next_depot = chosen_depot[chosen_pos];
+
+                customers_on_depot[depot].erase(customers_on_depot[depot].begin()+chosen_pos);
+                inv_dist.erase(inv_dist.begin()+chosen_pos);
+                chosen_depot.erase(chosen_depot.begin()+chosen_pos);
+                customers_on_depot[next_depot].push_back(chosen_cust);
+                depot_loads[depot] -= pr.get_customer_load(chosen_cust);
+                depot_loads[next_depot] += pr.get_customer_load(chosen_cust);
+            }
         }
     }
     return customers_on_depot;

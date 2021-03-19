@@ -69,4 +69,13 @@ std::vector<T> get_subset(std::vector<T> &vals, std::vector<int> &idxs) {
     return subset;
 }
 
+
+template<typename T>
+std::vector<T> remove_subset(std::vector<T> vals, std::vector<int> &idxs) {
+    std::sort(idxs.begin(), idxs.end(), std::greater<T>());
+    for (int idx:idxs)
+        vals.erase(vals.begin()+idx);
+    return vals;
+}
+
 #endif
