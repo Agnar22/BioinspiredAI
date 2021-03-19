@@ -108,7 +108,7 @@ struct TestGA: public testing::Test {
             std::string problem = "p06";
             std::string file_name = "../../Data files project 2/Testing Data/Data Files/"+problem;
             pr = file::load_problem(file_name);
-            num_individuals = 100;
+            num_individuals = 10;
             ga = GA(pr, num_individuals);
         };
 };
@@ -227,7 +227,7 @@ TEST_F(TestIndividual, comparison) {
 
 TEST_F(TestGA, best_cost_route_crossover) {
     Individual l = ga.get_individual(1);
-    Individual r = ga.get_individual(42);
+    Individual r = ga.get_individual(8);
     auto parents = std::make_pair(l, r);
 
     auto children = GA::best_cost_route_crossover(parents, pr);
@@ -241,7 +241,7 @@ TEST_F(TestGA, best_cost_route_crossover) {
 
 TEST_F(TestGA, mutate) {
     for (int pos=0; pos<3; ++pos) {
-        Individual ind = ga.get_individual(42);
+        Individual ind = ga.get_individual(8);
         Individual ind_cp = ind;
         int attempts = 0;
         while (ind==ind_cp && attempts<30) {
@@ -260,8 +260,10 @@ TEST_F(TestGA, initialized_population) {
 }
 
 TEST_F(TestGA, simulate) {
+    num_individuals = 100;
+    ga = GA(pr, num_individuals);
     // TODO: Add test to check that the population/the best improves.
-    ga.simulate(5, 0.1, 0.1, 1.0, 0.1, 10000);
+    ga.simulate(5, 0.5, 1.0, 1.0, 1.0, 10000);
 
     for (int ind=0; ind<num_individuals; ++ind) {
         TestIndividual::test_individual(ga.get_individual(ind), pr, true);
