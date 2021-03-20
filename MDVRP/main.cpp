@@ -6,13 +6,10 @@
 
 // TODO: Implement merge route.
 // TODO: Implement split route.
-// TODO: Setup github/workflow.
-// TODO: Hyperparameter search.
+// TODO: Implement intra depot mutation.
+// TODO: Create test to check all problemts.
 // TODO: Multithreading of different problems and same problem.
-// Ideas:
-// x- initialize customer to closest depot (obs. be carefull of edgecase where it is not illegal to have all at for one depot or similar)
-// x- elitism
-// x- variation operators with different kinds of "jumps" - small perfections and larger jumps
+// TODO: Setup github/workflow.
 
 int main() {
     Problem curr_prob = file::load_problem(PROBLEM_DIR+PROBLEM_NAME);
