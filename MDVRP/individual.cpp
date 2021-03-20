@@ -1,5 +1,7 @@
-#include "individual.h"
 #include <numeric>
+#include <queue>
+#include "individual.h"
+#include "file.h"
 
 // TODO: Implement remove_customer(int depot, int trip, int cust_pos, Problem &pr)
 // and use it where remove_customers is not suited.
@@ -21,7 +23,7 @@ void Individual::initialize_chromosomes(Problem &pr) {
     bool initialized = false;
     while (!initialized) {
         try {
-            cust_on_depots = assign_customers_to_depots(pr, true);
+            cust_on_depots = assign_customers_to_depots(pr, false);
 
             // Assign routes to depots.
             chromosome_trips.resize(pr.get_num_depots());
@@ -33,6 +35,7 @@ void Individual::initialize_chromosomes(Problem &pr) {
             initialized = true;
         } catch (std::invalid_argument e) {
             std::cout << e.what() << std::endl;
+            file::write_solution(*this, "p01.res");
             reset();
         }
     }
@@ -131,7 +134,7 @@ void Individual::setup_trips(int depot_num, std::vector<int> customers, Problem 
      * A trip is ended if it is shorter to start a new or the maximum trip distance is exceeded.
      * The trip distance and trip load is calculated for each trip.
      */
-    setup_trips_forward(0, depot_num, customers, pr);
+    c_and_w_algorithm(0, depot_num, customers, pr);
 }
 
 
@@ -221,6 +224,70 @@ void Individual::setup_trips_forward(int attempt_num, int depot_num, std::vector
         std::cout << "Completed setting up for depot: " << depot_num << " with "  << num_vhcl << " vehicles." << std::endl;
     }
 }
+
+std::pair<int, int> find_in_2d_vector(std::vector<std::vector<int>> &vec, int val) {
+    for (int x=0; x<vec.size(); ++x)
+        for (int y=0; y<vec[x].size(); ++y)
+            if (vec[x][y]==val)
+                return std::make_pair(x, y);
+    std::invalid_argument("Val was not found in vector.");
+}
+
+void Individual::c_and_w_algorithm(int attempt_num, int depot_num, std::vector<int> customers_to_order, Problem &pr) {
+    std::vector<int> num_ends(pr.get_num_customers(), 2);
+    std::vector<double> dists;
+    std::vector<std::vector<int>> trips;
+    std::vector<int> load_for_trips;
+    std::priority_queue<std::pair<double, std::pair<int, int>>> pq;
+    for (int cust:customers_to_order) {
+        dists.push_back(2*pr.get_distance(cust, depot_num+pr.get_num_customers()));
+        tot_dist += 2*pr.get_distance(cust, depot_num+pr.get_num_customers());
+        trips.push_back(std::vector<int>{cust});
+        load_for_trips.push_back(pr.get_customer_load(cust));
+        for (int cust2:customers_to_order) {
+            if (cust>=cust2)
+                continue;
+            int dep = depot_num + pr.get_num_customers();
+            double savings = pr.get_distance(cust, dep) + pr.get_distance(cust2, dep) - pr.get_distance(cust, cust2);
+            pq.push(std::make_pair(savings, std::make_pair(cust, cust2)));
+        }
+    }
+    while (trips.size()>pr.get_vhcl_pr_depot() && !pq.empty()) {
+        auto top = pq.top();
+        int first_cust = top.second.first;
+        int second_cust = top.second.second;
+        pq.pop();
+        // Check that both are ends of trips.
+        if (!(num_ends[first_cust]>0 && num_ends[second_cust]>0))
+            continue;
+        auto first_pos = find_in_2d_vector(trips, first_cust);
+        auto second_pos = find_in_2d_vector(trips, second_cust);
+        if (first_pos.first==second_pos.first)
+            continue;
+        // If it is possible to merge top.first and top.second wrt. load and length: merge
+        if (load_for_trips[first_pos.first]+load_for_trips[second_pos.first]>pr.get_max_load(depot_num) ||
+            (dists[first_pos.first]+dists[second_pos.first]-top.first>pr.get_max_length(depot_num) && pr.get_max_length(depot_num) > 0))
+            continue;
+        if (first_pos.second==0)
+            std::reverse(trips[first_pos.first].begin(), trips[first_pos.first].end());
+        if (second_pos.second!=0)
+            std::reverse(trips[second_pos.first].begin(), trips[second_pos.first].end());
+        num_ends[first_cust]-=1;
+        num_ends[second_cust]-=1;
+        trips[first_pos.first].insert(trips[first_pos.first].end(), trips[second_pos.first].begin(), trips[second_pos.first].end());
+        trips.erase(trips.begin()+second_pos.first);
+        dists[first_pos.first] += dists[second_pos.first]-top.first;
+        dists.erase(dists.begin()+second_pos.first);
+        load_for_trips[first_pos.first] += load_for_trips[second_pos.first];
+        load_for_trips.erase(load_for_trips.begin()+second_pos.first);
+        tot_dist -= top.first;
+    }
+    chromosome_trips[depot_num] = trips;
+    trip_dists[depot_num] = dists;
+    trip_loads[depot_num] = load_for_trips;
+}
+
+
 
 int Individual::random_choice(std::vector<double> &unscaled_probs) {
     double sum=0;
