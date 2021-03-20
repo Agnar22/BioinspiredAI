@@ -2,23 +2,13 @@
 #include "file.h"
 #include "config.h"
 
-// TODO: Implement remove_customer(int depot, int trip, int cust_pos, Problem &pr)
-// and use it where remove_customers is not suited.
 
 Individual::Individual(Problem &pr) {
-    /**
-    * Ways to initialize:
-    *  - Deterministically/stochastically assign points to depots based on distance.
-    *    - Create routes based on closest point deterministically/stochastically.
-    **/
     tot_dist=0;
     initialize_chromosomes(pr);
 }
 
 void Individual::initialize_chromosomes(Problem &pr) {
-    // Assign customers to depots.
-    // TODO: Make stoch. assignment of customers work... (now it causes crash)
-    // TODO: Make sure that no depot get more customer load than it can manage.
     bool initialized = false;
     while (!initialized) {
         try {
@@ -332,6 +322,8 @@ double Individual::get_fitness() const {
 }
 
 void Individual::remove_customers(std::vector<int> &custs, Problem &pr) {
+    // TODO: Implement remove_customer(int depot, int trip, int cust_pos, Problem &pr)
+    // and use it where remove_customers is not suited.
     for (int cust:custs) {
         int rmd_pos = remove_from_2d_vector(cust_on_depots, cust, false);
         int num_trips_on_depot = chromosome_trips[rmd_pos].size();
