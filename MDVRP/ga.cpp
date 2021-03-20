@@ -3,7 +3,7 @@
 #include "file.h"
 
 
-GA::GA(Problem &pr, int population_size): pr{pr} {
+GA::GA(Problem &pr, int population_size, std::string file_name): pr{pr}, file_name{file_name} {
     initialize_population(population_size);
 }
 
@@ -44,7 +44,7 @@ void GA::simulate(int tourname_size, double stoch_tournament_prob, double prob_r
         // Next generation.
         population=child_gen;
 
-        print_population_statistics(population, "p01.res");
+        print_population_statistics(population, file_name);
     }
 }
 

@@ -102,14 +102,15 @@ struct TestGA: public testing::Test {
         Problem pr;
         GA ga;
         int num_individuals;
+        std::string problem;
 
         void SetUp() {
             srand(42);
-            std::string problem = "p06";
+            problem = "p11";
             std::string file_name = "../../Data files project 2/Testing Data/Data Files/"+problem;
             pr = file::load_problem(file_name);
             num_individuals = 10;
-            ga = GA(pr, num_individuals);
+            ga = GA(pr, num_individuals, problem+".res");
         };
 };
 
@@ -260,8 +261,8 @@ TEST_F(TestGA, initialized_population) {
 }
 
 TEST_F(TestGA, simulate) {
-    num_individuals = 100;
-    ga = GA(pr, num_individuals);
+    num_individuals = 300;
+    ga = GA(pr, num_individuals, problem+".res");
     // TODO: Add test to check that the population/the best improves.
     ga.simulate(5, 0.5, 1.0, 1.0, 1.0, 10000);
 

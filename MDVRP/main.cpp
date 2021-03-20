@@ -16,6 +16,6 @@
 
 int main() {
     Problem curr_prob = file::load_problem(PROBLEM_DIR+PROBLEM_NAME);
-    GA ga(curr_prob, POPULATION_SIZE);
+    GA ga(curr_prob, POPULATION_SIZE, PROBLEM_NAME+".res");
     ga.simulate(TOURNAMENT_SIZE, STOCH_TOURNAMENT_PROB, REV_MUT_PROB, RE_ROUTING_PROB, SWAPPING_PROB, INTER_DEPOT_SWAPPING_INTERVAL);
 }

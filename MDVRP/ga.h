@@ -9,11 +9,12 @@
 class GA {
     private:
         std::vector<Individual> population;
+        std::string file_name;
         Problem pr;
 
     public:
         GA() {};
-        GA(Problem&, int);
+        GA(Problem&, int, std::string);
         void initialize_population(int);
         Individual get_individual(int);
         void simulate(int tourname_size, double, double, double, double, int);
