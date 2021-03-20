@@ -134,7 +134,10 @@ void Individual::setup_trips(int depot_num, std::vector<int> customers, Problem 
      * A trip is ended if it is shorter to start a new or the maximum trip distance is exceeded.
      * The trip distance and trip load is calculated for each trip.
      */
-    c_and_w_algorithm(0, depot_num, customers, pr);
+    if (0.2>(double)(rand()) / (double)(RAND_MAX))
+        setup_trips_forward(0, depot_num, customers, pr);
+    else
+        c_and_w_algorithm(0.2, 0, depot_num, customers, pr);
 }
 
 
@@ -233,7 +236,7 @@ std::pair<int, int> find_in_2d_vector(std::vector<std::vector<int>> &vec, int va
     std::invalid_argument("Val was not found in vector.");
 }
 
-void Individual::c_and_w_algorithm(int attempt_num, int depot_num, std::vector<int> customers_to_order, Problem &pr) {
+void Individual::c_and_w_algorithm(double stoch_drop_prob, int attempt_num, int depot_num, std::vector<int> customers_to_order, Problem &pr) {
     std::vector<int> num_ends(pr.get_num_customers(), 2);
     std::vector<double> dists;
     std::vector<std::vector<int>> trips;
@@ -252,7 +255,7 @@ void Individual::c_and_w_algorithm(int attempt_num, int depot_num, std::vector<i
             pq.push(std::make_pair(savings, std::make_pair(cust, cust2)));
         }
     }
-    while (trips.size()>pr.get_vhcl_pr_depot() && !pq.empty()) {
+    while (!pq.empty() && (trips.size()>pr.get_vhcl_pr_depot() || pq.top().first>=0)) {
         auto top = pq.top();
         int first_cust = top.second.first;
         int second_cust = top.second.second;
@@ -268,6 +271,8 @@ void Individual::c_and_w_algorithm(int attempt_num, int depot_num, std::vector<i
         if (load_for_trips[first_pos.first]+load_for_trips[second_pos.first]>pr.get_max_load(depot_num) ||
             (dists[first_pos.first]+dists[second_pos.first]-top.first>pr.get_max_length(depot_num) && pr.get_max_length(depot_num) > 0))
             continue;
+        if (stoch_drop_prob>(double)(rand()) / (double)(RAND_MAX))
+            continue;
         if (first_pos.second==0)
             std::reverse(trips[first_pos.first].begin(), trips[first_pos.first].end());
         if (second_pos.second!=0)
@@ -282,9 +287,15 @@ void Individual::c_and_w_algorithm(int attempt_num, int depot_num, std::vector<i
         load_for_trips.erase(load_for_trips.begin()+second_pos.first);
         tot_dist -= top.first;
     }
-    chromosome_trips[depot_num] = trips;
-    trip_dists[depot_num] = dists;
-    trip_loads[depot_num] = load_for_trips;
+    if (trips.size()>pr.get_vhcl_pr_depot()) {
+        if (attempt_num==3)
+            throw std::invalid_argument("Failed more than three times to set up. Giving up...");
+        c_and_w_algorithm(stoch_drop_prob, attempt_num+1, depot_num, customers_to_order, pr);
+    } else {
+        chromosome_trips[depot_num] = trips;
+        trip_dists[depot_num] = dists;
+        trip_loads[depot_num] = load_for_trips;
+    }
 }
 
 
