@@ -5,7 +5,6 @@
 #include <queue>
 #include "individual.h"
 #include "problem.h"
-#include "file.h"
 
 class GA {
     private:
@@ -22,7 +21,6 @@ class GA {
         static std::pair<Individual, Individual> tournament_selection(std::vector<Individual>, int, double);
         static void print_population_statistics(std::vector<Individual>&, std::string);
         static std::pair<Individual, Individual> best_cost_route_crossover(std::pair<Individual, Individual>&, Problem&);
-        void test_fitness();
         static void intra_depot_mutation(Individual&, double, double, double, Problem&);
         static void inter_depot_mutation(Individual&);
         static void mutate(Individual&, double, double, double, bool, Problem&);

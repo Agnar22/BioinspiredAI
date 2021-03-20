@@ -1,7 +1,6 @@
-#include <numeric>
-#include <queue>
 #include "individual.h"
 #include "file.h"
+#include "config.h"
 
 // TODO: Implement remove_customer(int depot, int trip, int cust_pos, Problem &pr)
 // and use it where remove_customers is not suited.
@@ -23,7 +22,7 @@ void Individual::initialize_chromosomes(Problem &pr) {
     bool initialized = false;
     while (!initialized) {
         try {
-            cust_on_depots = assign_customers_to_depots(pr, false);
+            cust_on_depots = assign_customers_to_depots(pr, STOCHASTIC_ASSIGNMENT);
 
             // Assign routes to depots.
             chromosome_trips.resize(pr.get_num_depots());
@@ -58,7 +57,7 @@ std::vector<std::vector<int>> Individual::assign_customers_to_depots(Problem &pr
         if (stoch) {
             std::vector<double> depot_prob;
             for (double dist:depot_dist[cust]) {
-                depot_prob.push_back(1/std::pow(dist, 4));
+                depot_prob.push_back(1/std::pow(dist, POW_INV_DEPOT_DIST));
             }
             double sum=0;
             std::for_each(depot_prob.begin(), depot_prob.end(), [&] (double n) {sum += n;});
@@ -107,7 +106,7 @@ std::vector<std::vector<int>> Individual::assign_customers_to_depots(Problem &pr
                 std::vector<double> distances_to_other_custs = get_subset<double>(pr.get_distances()[cust], other_custs);
                 int closest_cust_pos = std::min_element(distances_to_other_custs.begin(), distances_to_other_custs.end())-distances_to_other_custs.begin();
                 int closest_cust = other_custs[closest_cust_pos];
-                inv_dist.push_back(std::pow(1/pr.get_distance(cust, closest_cust), 4));
+                inv_dist.push_back(1.0/std::pow(pr.get_distance(cust, closest_cust), POW_RE_ASSIGN_INV_DEPOT_DIST));
                 chosen_depot.push_back(depot_for_cust[closest_cust]);
             }
 
@@ -134,10 +133,10 @@ void Individual::setup_trips(int depot_num, std::vector<int> customers, Problem 
      * A trip is ended if it is shorter to start a new or the maximum trip distance is exceeded.
      * The trip distance and trip load is calculated for each trip.
      */
-    if (0.2>(double)(rand()) / (double)(RAND_MAX))
+    if (GREEDY_PROB>(double)(rand()) / (double)(RAND_MAX))
         setup_trips_forward(0, depot_num, customers, pr);
     else
-        c_and_w_algorithm(0.2, 0, depot_num, customers, pr);
+        c_and_w_algorithm(0, depot_num, customers, pr);
 }
 
 
@@ -158,7 +157,7 @@ void Individual::setup_trips_forward(int attempt_num, int depot_num, std::vector
         int closest_cust_pos_deterministically = std::min_element(cust_distances.begin(), cust_distances.end()) - cust_distances.begin();
         std::vector<double> unscaled_cust_probs;
         for (double dist:cust_distances)
-            unscaled_cust_probs.push_back(std::pow(1.0/dist, 10));
+            unscaled_cust_probs.push_back(1.0/std::pow(dist, POW_INV_CUST_DIST));
         int closest_cust_pos = random_choice(unscaled_cust_probs);
         same_counter+= closest_cust_pos == closest_cust_pos_deterministically;
         not_same_counter+= closest_cust_pos != closest_cust_pos_deterministically;
@@ -216,7 +215,7 @@ void Individual::setup_trips_forward(int attempt_num, int depot_num, std::vector
     //std::cout << same_counter << " " << not_same_counter << std::endl;
     if (num_vhcl>pr.get_vhcl_pr_depot()) {
         std::cout << "Too many vehicles for depot: " << depot_num << " with "  << num_vhcl << " vehicles." << std::endl;
-        if (attempt_num==3)
+        if (attempt_num==RETRY_ATTEMPTS)
             throw std::invalid_argument("Failed more than three times to set up. Giving up...");
         chromosome_trips[depot_num].clear();
         tot_dist -= std::accumulate(trip_dists[depot_num].begin(), trip_dists[depot_num].end(), 0.0);
@@ -236,7 +235,7 @@ std::pair<int, int> find_in_2d_vector(std::vector<std::vector<int>> &vec, int va
     std::invalid_argument("Val was not found in vector.");
 }
 
-void Individual::c_and_w_algorithm(double stoch_drop_prob, int attempt_num, int depot_num, std::vector<int> customers_to_order, Problem &pr) {
+void Individual::c_and_w_algorithm(int attempt_num, int depot_num, std::vector<int> customers_to_order, Problem &pr) {
     std::vector<int> num_ends(pr.get_num_customers(), 2);
     std::vector<double> dists;
     std::vector<std::vector<int>> trips;
@@ -271,7 +270,7 @@ void Individual::c_and_w_algorithm(double stoch_drop_prob, int attempt_num, int 
         if (load_for_trips[first_pos.first]+load_for_trips[second_pos.first]>pr.get_max_load(depot_num) ||
             (dists[first_pos.first]+dists[second_pos.first]-top.first>pr.get_max_length(depot_num) && pr.get_max_length(depot_num) > 0))
             continue;
-        if (stoch_drop_prob>(double)(rand()) / (double)(RAND_MAX))
+        if (DROP_PROB>(double)(rand()) / (double)(RAND_MAX))
             continue;
         if (first_pos.second==0)
             std::reverse(trips[first_pos.first].begin(), trips[first_pos.first].end());
@@ -288,9 +287,9 @@ void Individual::c_and_w_algorithm(double stoch_drop_prob, int attempt_num, int 
         tot_dist -= top.first;
     }
     if (trips.size()>pr.get_vhcl_pr_depot()) {
-        if (attempt_num==3)
+        if (attempt_num==RETRY_ATTEMPTS)
             throw std::invalid_argument("Failed more than three times to set up. Giving up...");
-        c_and_w_algorithm(stoch_drop_prob, attempt_num+1, depot_num, customers_to_order, pr);
+        c_and_w_algorithm(attempt_num+1, depot_num, customers_to_order, pr);
     } else {
         chromosome_trips[depot_num] = trips;
         trip_dists[depot_num] = dists;
@@ -484,7 +483,7 @@ void Individual::insert_stochastically(int cust, double prob_greedy, int depot, 
         tot_dist += trip_dists[depot].back();
     } else {
         int chosen_insert_pos;
-        if (true) { // TODO: Generate random number.
+        if (prob_greedy>(double)(rand()) / (double)(RAND_MAX)) {
             // TODO: Can optimize by keeping the minimum stored as a variable.
             chosen_insert_pos = std::min_element(insert_costs.begin(), insert_costs.end())-insert_costs.begin();
         } else {

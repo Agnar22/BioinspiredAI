@@ -2,6 +2,7 @@
 #include <utility>
 #include <numeric>
 #include "gtest/gtest.h"
+#include "../config.h"
 #include "../file.h"
 #include "../individual.h"
 #include "../ga.h"
@@ -69,7 +70,6 @@ struct TestIndividual: public testing::Test {
             for (int depot=0; depot<pr.get_num_depots(); ++depot) {
                 for (int trip=0; trip<ind.chromosome_trips[depot].size(); ++trip) {
                     double correct_trip_dist = Individual::calculate_trip_distance(ind.chromosome_trips[depot][trip], depot, pr);
-                    std::cout << depot << " " << trip << " " << ind.trip_dists[depot][trip] << " " << correct_trip_dist << std::endl;
                     EXPECT_LT(std::abs(ind.trip_dists[depot][trip]-correct_trip_dist), 1e-8);
                     if (pr.get_max_length(depot)!=0)
                         EXPECT_LE(ind.trip_dists[depot][trip], pr.get_max_length(depot));

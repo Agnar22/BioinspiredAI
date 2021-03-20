@@ -1,4 +1,6 @@
 #include "ga.h"
+#include "config.h"
+#include "file.h"
 
 
 GA::GA(Problem &pr, int population_size): pr{pr} {
@@ -15,10 +17,10 @@ void GA::initialize_population(int population_size){
 Individual GA::get_individual(int num) {return population[num];}
 
 void GA::simulate(int tourname_size, double stoch_tournament_prob, double prob_rev_mut, double prob_re_routing, double prob_swapping, int inter_depot_swapping) {
-    for (int gen=0; gen<200; ++gen) {
+    for (int gen=0; gen<NUM_GENERATIONS; ++gen) {
         std::cout << "Generation " << gen << std::endl;
         std::vector<Individual> child_gen;
-        int num_elites = (int)((double)(population.size())/100.0);
+        int num_elites = (int)(ELITE_PERCENTAGE * (double)(population.size())/100.0);
         while (child_gen.size()<population.size()-num_elites) {
             // Selection.
             std::pair<Individual, Individual> parents = GA::tournament_selection(population, tourname_size, stoch_tournament_prob);
@@ -92,7 +94,7 @@ std::pair<Individual, Individual> GA::best_cost_route_crossover(std::pair<Indivi
     Individual s_child = parents.second;
     bool successful_crossover = false;
 
-    for (int tries=0; tries<3 && !successful_crossover; ++tries) {
+    for (int tries=0; tries<BEST_COST_ROUTE_TRIES && !successful_crossover; ++tries) {
         try {
             int num_depots = parents.first.chromosome_trips.size();
             int depot = rand()%num_depots;
@@ -109,9 +111,8 @@ std::pair<Individual, Individual> GA::best_cost_route_crossover(std::pair<Indivi
             s_child.remove_customers(rmd_cust_s, pr);
 
             // Stochastically add customers, that were previously removed, to depot.
-            // TODO: repeat x times if failing, then just copy parents if it does not work after x times.
-            std::for_each(rmd_cust_f.begin(), rmd_cust_f.end(), [&] (int cust) {f_child.insert_stochastically(cust, 0.8, depot, pr);});
-            std::for_each(rmd_cust_s.begin(), rmd_cust_s.end(), [&] (int cust) {s_child.insert_stochastically(cust, 0.8, depot, pr);});
+            std::for_each(rmd_cust_f.begin(), rmd_cust_f.end(), [&] (int cust) {f_child.insert_stochastically(cust, GREEDY_INSERT_PROB, depot, pr);});
+            std::for_each(rmd_cust_s.begin(), rmd_cust_s.end(), [&] (int cust) {s_child.insert_stochastically(cust, GREEDY_INSERT_PROB, depot, pr);});
             successful_crossover = true;
         } catch (const std::exception& e) {
             std::cout << e.what() << std::endl;
@@ -124,10 +125,6 @@ std::pair<Individual, Individual> GA::best_cost_route_crossover(std::pair<Indivi
     return std::make_pair(f_child, s_child);
 }
 
-void GA::test_fitness() {
-
-}
-
 void GA::mutate(Individual &ind, double prob_rev_mut, double prob_re_routing, double prob_swapping, bool inter_depot_mut, Problem &pr) {
     if (!inter_depot_mut)
         GA::intra_depot_mutation(ind, prob_rev_mut, prob_re_routing, prob_swapping, pr);
@@ -137,14 +134,17 @@ void GA::mutate(Individual &ind, double prob_rev_mut, double prob_re_routing, do
 
 void GA::intra_depot_mutation(Individual &ind, double prob_rev_mut, double prob_re_routing, double prob_swapping, Problem &pr) {
     // Reversal mutation.
-    if ((double)(rand())/(double)(RAND_MAX)<prob_rev_mut)
+    if ((double)(rand())/(double)(RAND_MAX)<prob_rev_mut) {
         ind.reversal_mutation(rand()%pr.get_num_depots(), pr);
+    }
     // Single customer re-routing.
-    if ((double)(rand())/(double)(RAND_MAX)<prob_re_routing)
+    if ((double)(rand())/(double)(RAND_MAX)<prob_re_routing) {
         ind.re_routing_mutation(rand()%pr.get_num_depots(), pr);
+    }
     // Swapping (use marginal cost)
-    if ((double)(rand())/(double)(RAND_MAX)<prob_swapping)
+    if ((double)(rand())/(double)(RAND_MAX)<prob_swapping) {
         ind.swapping_mutation(rand()%pr.get_num_depots(), pr);
+    }
 }
 
 void GA::inter_depot_mutation(Individual &ind) {}

@@ -5,8 +5,8 @@
 #include <string>
 #include <fstream>
 #include <regex>
-#include "individual.h"
 #include "problem.h"
+#include "individual.h"
 
 namespace file {
     std::vector<std::vector<double>> read_flat(std::string);

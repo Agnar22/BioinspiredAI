@@ -10,7 +10,7 @@ project(MDVRP)
 enable_testing()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -pthread -lpthread -O3 -march=native")
 
-add_library(ga ga.h ga.cpp individual.h individual.cpp problem.h problem.cpp file.h file.cpp)
+add_library(ga config.h ga.h ga.cpp individual.h individual.cpp problem.h problem.cpp file.h file.cpp)
 add_executable(main main.cpp)
 target_link_libraries(main ga)
 
