@@ -279,6 +279,7 @@ void Individual::c_and_w_algorithm(int attempt_num, int depot_num, std::vector<i
     if (trips.size()>pr.get_vhcl_pr_depot()) {
         if (attempt_num==RETRY_ATTEMPTS)
             throw std::invalid_argument("Failed more than three times to set up. Giving up...");
+        tot_dist -= std::accumulate(dists.begin(), dists.end(), 0.0);
         c_and_w_algorithm(attempt_num+1, depot_num, customers_to_order, pr);
     } else {
         chromosome_trips[depot_num] = trips;
