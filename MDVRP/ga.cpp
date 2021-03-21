@@ -16,8 +16,10 @@ void GA::initialize_population(int population_size){
 
 Individual GA::get_individual(int num) {return population[num];}
 
+std::vector<Individual> GA::get_population() {return population;}
+
 void GA::simulate(int tourname_size, double stoch_tournament_prob, double prob_rev_mut, double prob_re_routing, double prob_swapping, int inter_depot_swapping) {
-    for (int gen=0; gen<NUM_GENERATIONS; ++gen) {
+    for (int gen=1; gen<NUM_GENERATIONS; ++gen) {
         std::cout << "Generation " << gen << std::endl;
         std::vector<Individual> child_gen;
         int num_elites = (int)(ELITE_PERCENTAGE * (double)(population.size())/100.0);

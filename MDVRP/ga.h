@@ -17,6 +17,7 @@ class GA {
         GA(Problem&, int, std::string);
         void initialize_population(int);
         Individual get_individual(int);
+        std::vector<Individual> get_population();
         void simulate(int tourname_size, double, double, double, double, int);
         static std::vector<Individual> get_top_n(std::vector<Individual>&, int);
         static std::pair<Individual, Individual> tournament_selection(std::vector<Individual>, int, double);

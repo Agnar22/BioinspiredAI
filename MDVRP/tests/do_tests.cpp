@@ -264,10 +264,46 @@ TEST_F(TestGA, simulate) {
     num_individuals = 300;
     ga = GA(pr, num_individuals, problem+".res");
     // TODO: Add test to check that the population/the best improves.
-    ga.simulate(5, 0.5, 1.0, 1.0, 1.0, 10000);
+    ga.simulate(5, 0.2, 0.3, 0.8, 0.5, 30);
 
     for (int ind=0; ind<num_individuals; ++ind) {
         TestIndividual::test_individual(ga.get_individual(ind), pr, true);
+    }
+}
+
+TEST(Cases, all) {
+    int num_individuals = 300;
+    std::vector<std::string> problems = {
+        "p01", "p02", "p03", "p04", "p05",
+        "p06", "p07", "p08", "p09", "p10",
+        "p11", "p12", "p13", "p14", "p15",
+        "p16", "p17", "p18", "p19", "p20",
+        "p21", "p22", "p23"
+    };
+    std::vector<double> limits = {
+        611.1, 519.75, 756, 1063.9, 834.75,
+        966, 1008, 4830, 4233.6, 4014.15,
+        4046.7, 1369.7, 1384.8, 1428, 2889.6,
+        2733.15, 2817.15, 4165.35, 4098.15, 4378.5,
+        6426, 6230.7, 6520.5
+    };
+
+    for (int problem_num=0; problem_num<problems.size(); ++problem_num) {
+        std::string problem = problems[problem_num];
+        std::string file_name = "../../Data files project 2/Testing Data/Data Files/"+problem;
+        Problem pr = file::load_problem(file_name);
+        GA ga = GA(pr, num_individuals, problem+".res");
+        ga.simulate(6, 0.2, 0.3, 0.9, 0.5, 30);
+
+        std::vector<Individual> population = ga.get_population();
+
+        std::cout << "Testing individuals for problem " << problem << std::endl;
+        for (Individual ind:population) {
+            TestIndividual::test_individual(ind, pr, true);
+        }
+        std::cout << "Ensuring that the best solution for problem " << problem << " is below limit." << std::endl;
+        std::cout << "Best solution was: " << ga.get_top_n(population, 1)[0].tot_dist << " with limit " << limits[problem_num] << "." << std::endl;
+        ASSERT_LT(ga.get_top_n(population, 1)[0].tot_dist, limits[problem_num]);
     }
 }
 
