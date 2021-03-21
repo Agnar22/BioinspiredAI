@@ -432,6 +432,46 @@ void Individual::swapping_mutation(int depot, Problem &pr) {
     }
 }
 
+void Individual::inter_depot_mutation(int depot, Problem &pr) {
+    double lowest_dist=INFINITY;
+    int lowest_cust, to_depot, to_trip, insert_pos;
+    for (int from_trip=0; from_trip<chromosome_trips[depot].size(); ++from_trip) {
+        std::vector<int> cur_trip = chromosome_trips[depot][from_trip];
+        for (int from_pos=0; from_pos<chromosome_trips[depot][from_trip].size(); ++from_trip) {
+            int cust = cur_trip[from_pos];
+            int cust_before = from_pos==0 ? depot+pr.get_num_customers() : cur_trip[from_pos-1];
+            int cust_after = from_pos==chromosome_trips[depot][from_trip].size() ? depot+pr.get_num_customers() : cur_trip[from_pos];
+            double marg_cost = marginal_cost(cust_before, cust_after, cust, pr);
+            for (int other_depot=0; other_depot<pr.get_num_depots(); ++other_depot) {
+                if (other_depot!=depot) {
+                    auto insert_costs_and_pos = find_insert_costs(cust, other_depot, pr);
+                    auto insert_costs = insert_costs_and_pos.first;
+                    if (insert_costs.size()==0)
+                        continue;
+                    int best_pos = std::min_element(insert_costs.begin(), insert_costs.end())-insert_costs.begin();
+                    double cur_lowest_dist = insert_costs[best_pos] - marg_cost;
+
+                    if (cur_lowest_dist<lowest_dist) {
+                        lowest_dist = cur_lowest_dist;
+                        lowest_cust = cust;
+                        to_depot = other_depot;
+                        to_trip = insert_costs_and_pos.second[best_pos].first;
+                        insert_pos = insert_costs_and_pos.second[best_pos].second;
+                        if (INTER_DEPOT_RANDOM_BEST_PROB > (double)(rand()) / (double)(RAND_MAX))
+                            goto finished_searching;
+                    }
+                }
+            }
+        }
+    }
+    finished_searching:
+    if (lowest_dist!=INFINITY) {
+        std::vector<int> chosen_cust{lowest_cust};
+        remove_customers(chosen_cust, pr);
+        insert_customer(to_depot, to_trip, insert_pos, lowest_cust, pr);
+    }
+}
+
 std::pair<std::vector<double>, std::vector<std::pair<int, int>>> Individual::find_insert_costs(int cust, int depot, Problem &pr){
     std::vector<std::pair<int, int>> insert_positions;
     std::vector<double> insert_costs;

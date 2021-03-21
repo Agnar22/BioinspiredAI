@@ -32,6 +32,7 @@ class Individual {
         void reversal_mutation(int, Problem&);
         void re_routing_mutation(int, Problem&);
         void swapping_mutation(int, Problem&);
+        void inter_depot_mutation(int, Problem&);
         std::pair<std::vector<double>, std::vector<std::pair<int, int>>> find_insert_costs(int, int, Problem&);
         void insert_stochastically(int, double, int, Problem&);
         static double marginal_cost(int, int, int, Problem&);

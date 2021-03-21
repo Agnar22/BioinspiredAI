@@ -130,8 +130,9 @@ std::pair<Individual, Individual> GA::best_cost_route_crossover(std::pair<Indivi
 void GA::mutate(Individual &ind, double prob_rev_mut, double prob_re_routing, double prob_swapping, bool inter_depot_mut, Problem &pr) {
     if (!inter_depot_mut)
         GA::intra_depot_mutation(ind, prob_rev_mut, prob_re_routing, prob_swapping, pr);
-    else
-        GA::inter_depot_mutation(ind);
+    else {
+        ind.inter_depot_mutation(rand()%pr.get_num_depots(), pr);
+    }
 }
 
 void GA::intra_depot_mutation(Individual &ind, double prob_rev_mut, double prob_re_routing, double prob_swapping, Problem &pr) {
@@ -148,5 +149,3 @@ void GA::intra_depot_mutation(Individual &ind, double prob_rev_mut, double prob_
         ind.swapping_mutation(rand()%pr.get_num_depots(), pr);
     }
 }
-
-void GA::inter_depot_mutation(Individual &ind) {}
