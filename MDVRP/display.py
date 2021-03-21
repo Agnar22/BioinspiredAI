@@ -4,7 +4,7 @@ import random
 from typing import List
 
 prob_dir = 'Data files project 2/Testing Data/Data Files/'
-#sol_dir = 'Data files project 2/Testing Data/Solution files/'
+sol_dir = 'Data files project 2/Testing Data/Solution files/'
 
 
 def read_problem_file(filename: str) -> List[List[float]]:
@@ -57,6 +57,7 @@ def display_problem_and_solution(customers: List[List[float]], depots: List[List
   if title is not None:
     plt.title(title)
   display_problem(ax, customers, depots, display=False)
+  depot_color = {}
   for route in routes:
     x, y = [], []
     for num, customer in enumerate(route):
@@ -67,7 +68,9 @@ def display_problem_and_solution(customers: List[List[float]], depots: List[List
       else:
         x.append(customers[customer][0])
         y.append(customers[customer][1])
-    ax.plot(x, y, color=[random.random(), random.random(), random.random()])
+    #if route[0] in depot_color:
+    depot_color[route[0]] = [random.random(), random.random(), random.random()]
+    ax.plot(x, y, color=depot_color[route[0]])
   plt.show()
 
 
@@ -81,7 +84,11 @@ def display_problem_and_solution_from_file(filename: str):
 
 
 if __name__ == '__main__':
-  sol_dir = 'build/'
-  display_problem_and_solution_from_file("p11")
+  #for filename in os.listdir(prob_dir):
+  #  display_problem_from_file(filename)
+  #  display_problem_and_solution_from_file(filename)
+  problem_name = "p07"
+  sol_dir = './build/'
+  display_problem_and_solution_from_file(problem_name)
   sol_dir = 'Data files project 2/Testing Data/Solution files/'
-  display_problem_and_solution_from_file("p11")
+  display_problem_and_solution_from_file(problem_name)
