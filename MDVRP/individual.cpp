@@ -24,7 +24,6 @@ void Individual::initialize_chromosomes(Problem &pr) {
             initialized = true;
         } catch (std::invalid_argument e) {
             std::cout << e.what() << std::endl;
-            file::write_solution(*this, "p01.res");
             reset();
         }
     }

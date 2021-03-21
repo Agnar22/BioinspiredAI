@@ -292,7 +292,7 @@ TEST(Cases, all) {
         std::string problem = problems[problem_num];
         std::string file_name = "../../Data files project 2/Testing Data/Data Files/"+problem;
         Problem pr = file::load_problem(file_name);
-        GA ga = GA(pr, num_individuals, problem+".res");
+        GA ga(pr, num_individuals, problem+".res");
         ga.simulate(6, 0.2, 0.3, 0.9, 0.5, 30);
 
         std::vector<Individual> population = ga.get_population();
