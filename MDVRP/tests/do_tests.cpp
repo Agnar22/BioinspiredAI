@@ -106,7 +106,7 @@ struct TestGA: public testing::Test {
 
         void SetUp() {
             srand(42);
-            problem = "p11";
+            problem = "p07";
             std::string file_name = "../../Data files project 2/Testing Data/Data Files/"+problem;
             pr = file::load_problem(file_name);
             num_individuals = 10;
@@ -245,7 +245,7 @@ TEST_F(TestGA, mutate) {
         Individual ind = ga.get_individual(8);
         Individual ind_cp = ind;
         int attempts = 0;
-        while (ind==ind_cp && attempts<30) {
+        while (ind==ind_cp && attempts<300) {
             ga.mutate(ind, 1.0*(pos==0), 1.0*(pos==1), 1.0*(pos==2), 0, pr);
             ++attempts;
         }
