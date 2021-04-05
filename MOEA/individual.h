@@ -17,9 +17,9 @@ static int euc_dist(cv::Vec3b from, cv::Vec3b to) {
 class Individual {
     public:
         Individual(cv::Mat);
+        std::vector<Dir> genes;
 
     private:
-        std::vector<Dir> genes;
         void initialize_genes(cv::Mat);
 };
 
