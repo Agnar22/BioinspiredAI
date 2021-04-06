@@ -17,19 +17,19 @@ double obj::edge_value(cv::Mat &orig_img, std::vector<Dir> &genes, std::vector<i
 }
 
 double obj::connectivity(std::vector<int> &root, int width, int height) {
-    double sum_connectivity=0;
+    double sum_connectivity=0.0;
     for (int row=0; row<height; ++row) {
         for (int col=0; col<width; ++col) {
             int curr_gene = row*width+col;
             int neigh_down = curr_gene+width;
             int neigh_right = curr_gene+1;
             if (row<height-1 && root[curr_gene]!=root[neigh_down])
-                sum_connectivity += 1/8;
+                sum_connectivity += 1.0/8.0;
             if (col<width-1 && root[curr_gene]!=root[neigh_right])
-                sum_connectivity += 1/8;
+                sum_connectivity += 1.0/8.0;
         }
     }
-    return 2*sum_connectivity;
+    return 2.0*sum_connectivity;
 }
 
 std::map<int, cv::Vec3d> obj::find_segment_means(cv::Mat &img, std::vector<int> &root) {
