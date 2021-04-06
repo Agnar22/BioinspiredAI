@@ -13,7 +13,7 @@ void Individual::initialize_genes(cv::Mat img) {
 
     int src=rand()%(img.rows*img.cols);
     Graph prim(img.rows*img.cols, img.cols, img.rows);
-    
+
     for (int row=0; row<img.rows; ++row) {
         for (int col=0; col<img.cols; ++col) {
             int cur_pos = row*img.cols+col;
@@ -32,7 +32,7 @@ void Individual::find_roots() {
     root.resize(genes.size(), -1);
     for (int gene=0; gene<genes.size(); ++gene)
         find_root(gene);
-};
+}
 
 int Individual::find_root(int gene) {
     if (root[gene]!=-1)
@@ -42,4 +42,3 @@ int Individual::find_root(int gene) {
     int parent_gene = find_pos(gene, genes[gene], width, height);
     return root[gene]=find_root(parent_gene);
 }
-
