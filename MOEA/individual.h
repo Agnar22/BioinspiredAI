@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <opencv2/opencv.hpp>
 #include "prim.h"
+#include "objective.h"
 
 static double euc_dist(cv::Vec3b from, cv::Vec3b to) {
     return std::sqrt(
@@ -20,11 +21,22 @@ class Individual {
         std::vector<Dir> genes;
         std::vector<int> root;
         int width, height;
+        double edge_value, connectivity, overall_deviation;
+
+        void calculate_objectives(cv::Mat&);
 
     private:
         void initialize_genes(cv::Mat);
         void find_roots();
         int find_root(int);
 };
+
+inline bool operator<(const Individual &l, const Individual &r) {
+    if (l.edge_value<=r.edge_value &&
+        l.connectivity<=r.connectivity &&
+        l.overall_deviation<=r.overall_deviation)
+        return true;
+    return false;
+}
 
 #endif

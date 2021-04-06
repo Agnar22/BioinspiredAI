@@ -1,6 +1,7 @@
 #include "file.h"
 #include "individual.h"
 #include "objective.h"
+#include "nsga.h"
 #include <iostream>
 #include <chrono>
 #include <queue>
@@ -71,8 +72,19 @@ int main() {
     auto stop = std::chrono::high_resolution_clock::now();
     std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count() << std::endl;
     std::cout << "Finished" << std::endl;
-    segment_and_display_image(img, ind.genes, img.cols, img.rows, 20);
-    std::cout << obj::edge_value(img, ind.genes, ind.root, img.cols, img.rows) << std::endl;
-    std::cout << obj::connectivity(ind.root, img.cols, img.rows) << std::endl;
-    std::cout << obj::overall_deviation(img, ind.root, img.cols, img.rows) << std::endl;
+    segment_and_display_image(img, ind.genes, img.cols, img.rows, 2000);
+    std::cout << "Edge value: " << obj::edge_value(img, ind.genes, ind.root, img.cols, img.rows) << std::endl;
+    std::cout << "Connectivity: " << obj::connectivity(ind.root, img.cols, img.rows) << std::endl;
+    std::cout << "Overall deviation: " << obj::overall_deviation(img, ind.root, img.cols, img.rows) << std::endl;
+    std::vector<Individual> population;
+    for (int ind=0; ind<30; ++ind) {
+        population.push_back(Individual(img));
+    }
+    auto sorted = nsga::fast_nondominated_sort(population, img);
+    for (int front=0; front<sorted.size(); ++front) {
+        std::cout << "Front " << front << std::endl;
+        for (int ind=0; ind<sorted[front].size(); ++ind) {
+            std::cout << sorted[front][ind].edge_value << " " << sorted[front][ind].connectivity << " "<< sorted[front][ind].overall_deviation << std::endl;
+        }
+    }
 }

@@ -33,7 +33,10 @@ std::vector<Dir> Graph::prim_mst(int src) {
             if (inMST[v] == false && key[v] > weight) {
                 key[v] = weight;
                 pq.push(std::make_pair(key[v], v));
-                parent[v] = find_direction(v, u, width, height);
+                if (weight < 15 || (double) rand() / (RAND_MAX)<0.02)
+                    parent[v] = find_direction(v, u, width, height);
+                else
+                    parent[v] = Dir::s;
             }
         }
     }

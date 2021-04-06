@@ -12,6 +12,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -pthread -lpthread -O3 -march=n
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-add_library(ga dir.h prim.h prim.cpp file.h file.cpp individual.h individual.cpp objective.h)
+add_library(ga dir.h prim.h prim.cpp nsga.h nsga.cpp file.h file.cpp individual.h individual.cpp objective.h objective.cpp)
 add_executable(main main.cpp)
 target_link_libraries(main ga ${OpenCV_LIBS})

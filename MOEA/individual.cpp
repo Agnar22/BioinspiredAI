@@ -5,6 +5,13 @@ Individual::Individual(cv::Mat img) {
     find_roots();
 }
 
+void Individual::calculate_objectives(cv::Mat &img) {
+    // TODO: Can be optimized to only calculate where something has changed.
+    edge_value = obj::edge_value(img, genes, root, img.cols, img.rows);
+    connectivity = obj::connectivity(root, img.cols, img.rows);
+    overall_deviation = obj::overall_deviation(img, root, img.cols, img.rows);
+}
+
 void Individual::initialize_genes(cv::Mat img) {
     genes.clear();
     genes.assign(img.rows*img.cols, Dir::s);
