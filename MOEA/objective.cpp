@@ -36,8 +36,8 @@ std::map<int, cv::Vec3d> obj::find_segment_means(cv::Mat &img, std::vector<int> 
     std::map<int, cv::Vec3d> segment_sum;
     std::map<int, int> pxls_in_segment;
     for (int pos=0; pos<root.size(); ++pos) {
-        int row = pos/img.rows;
-        int col = pos%img.rows;
+        int row = pos/img.cols;
+        int col = pos%img.cols;
         auto cur_pxl = img.at<cv::Vec3b>(row, col);
         if (segment_sum.find(pos)==segment_sum.end()) {
             segment_sum[pos] = cur_pxl;
@@ -56,9 +56,9 @@ std::map<int, cv::Vec3d> obj::find_segment_means(cv::Mat &img, std::vector<int> 
         cv::Vec3b value = elem.second;
         cv::Vec3b segment_sum = value;
         segment_means[key] = cv::Vec3b{
-            segment_sum[0]/pxls_in_segment[key],
-            segment_sum[1]/pxls_in_segment[key],
-            segment_sum[2]/pxls_in_segment[key]
+            (double)(segment_sum[0])/(double)(pxls_in_segment[key]),
+            (double)(segment_sum[1])/(double)(pxls_in_segment[key]),
+            (double)(segment_sum[2])/(double)(pxls_in_segment[key])
         };
     }
     return segment_means;
