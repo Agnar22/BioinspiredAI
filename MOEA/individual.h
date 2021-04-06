@@ -18,9 +18,13 @@ class Individual {
     public:
         Individual(cv::Mat);
         std::vector<Dir> genes;
+        std::vector<int> root;
+        int width, height;
 
     private:
         void initialize_genes(cv::Mat);
+        void find_roots();
+        int find_root(int);
 };
 
 #endif

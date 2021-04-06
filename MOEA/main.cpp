@@ -1,5 +1,6 @@
 #include "file.h"
 #include "individual.h"
+#include "objective.h"
 #include <iostream>
 #include <chrono>
 #include <queue>
@@ -69,4 +70,7 @@ int main() {
     std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count() << std::endl;
     std::cout << "Finished" << std::endl;
     segment_and_display_image(img, ind.genes, img.cols, img.rows, 20);
+    std::cout << edge_value(img, ind.genes, ind.root, img.rows, img.cols) << std::endl;
+    std::cout << connectivity(ind.root, img.rows, img.cols) << std::endl;
+    std::cout << overall_deviation(img, ind.root, img.rows, img.cols) << std::endl;
 }

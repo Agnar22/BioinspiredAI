@@ -53,4 +53,14 @@ static Dir reverse_dir(Dir dir) {
     throw std::invalid_argument("No direction was found.");
 }
 
+static Dir get_actual_dir(Dir dir, int pos, int width, int height) {
+    // If the direction is out of the image, it points to itself.
+    if (pos/width == 0 && dir==Dir::u ||
+        pos/width==height-1 && dir==Dir::d ||
+        pos%width==0 && dir==Dir::l || 
+        pos%width==width-1 && dir==Dir::r)
+        return Dir::s;
+    return dir;
+}
+
 #endif
