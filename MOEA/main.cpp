@@ -15,7 +15,7 @@ void segment_and_display_image(cv::Mat orig_image, std::vector<Dir> genes, int w
 
     for (int gene_pos = 0; gene_pos<genes.size(); ++gene_pos) {
         if (!visited[gene_pos])
-            q.push(std::make_pair(0, cv::Vec3b{(unsigned char)(rand()%256), (unsigned char)(rand()%256), (unsigned char)(rand()%256)}));
+            q.push(std::make_pair(gene_pos, cv::Vec3b{(unsigned char)(rand()%256), (unsigned char)(rand()%256), (unsigned char)(rand()%256)}));
         while (!q.empty()) {
             auto top = q.front();
             visited[top.first]=true;
