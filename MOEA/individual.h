@@ -6,7 +6,7 @@
 #include <opencv2/opencv.hpp>
 #include "prim.h"
 
-static int euc_dist(cv::Vec3b from, cv::Vec3b to) {
+static double euc_dist(cv::Vec3b from, cv::Vec3b to) {
     return std::sqrt(
         std::pow(from[0]-to[0], 2) +
         std::pow(from[1]-to[1], 2) +
