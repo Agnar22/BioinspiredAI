@@ -54,3 +54,38 @@ std::vector<std::vector<Individual>> nsga::fast_nondominated_sort(std::vector<In
     return sorted;
 }
 
+std::vector<Individual> nsga::crowding_sort(std::vector<Individual> &pop) {
+    std::vector<CrowdingIndividual> crowding_pop(pop.size());
+    for (int ind=0; ind<pop.size(); ++ind)
+        crowding_pop[ind] = CrowdingIndividual(ind, std::vector<double>{pop[ind].edge_value, pop[ind].connectivity, pop[ind].overall_deviation});
+
+    std::cout << std::endl;
+    for (int sorting_pos=0; sorting_pos<3; ++sorting_pos) {
+        auto sorting_function = [&](const CrowdingIndividual &l, const CrowdingIndividual &r){
+            return l.values[sorting_pos] < r.values[sorting_pos];
+        };
+        std::sort(crowding_pop.begin(), crowding_pop.end(), sorting_function);
+        double value_length = crowding_pop[crowding_pop.size()-1].values[sorting_pos] - crowding_pop[0].values[sorting_pos];
+        for (int ind=0; ind<crowding_pop.size(); ++ind) {
+            if (ind==0 || ind == pop.size()-1) {
+                crowding_pop[ind].distances[sorting_pos] = INF;
+                continue;
+            }
+            double neighbour_space = std::abs(crowding_pop[ind+1].values[sorting_pos] - crowding_pop[ind-1].values[sorting_pos]);
+            crowding_pop[ind].distances[sorting_pos] = neighbour_space/value_length;
+        }
+    }
+
+    std::sort(
+        crowding_pop.begin(),
+        crowding_pop.end(),
+        [](const CrowdingIndividual &l, const CrowdingIndividual &r) {
+            return std::accumulate(l.distances.begin(), l.distances.end(), 0.0) > std::accumulate(r.distances.begin(), r.distances.end(), 0.0);
+        }
+    );
+    std::vector<Individual> crowding_sorted_individuals;
+    for (CrowdingIndividual ind:crowding_pop) {
+        crowding_sorted_individuals.push_back(pop[ind.ind]);
+    }
+    return crowding_sorted_individuals;
+}
