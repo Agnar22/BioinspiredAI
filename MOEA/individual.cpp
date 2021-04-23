@@ -5,6 +5,15 @@ Individual::Individual(cv::Mat img) {
     find_roots();
 }
 
+Individual::Individual(Individual &l, Individual &r, int crossover_pos, cv::Mat &img) {
+    width = img.cols;
+    height = img.rows;
+    genes.clear();
+    genes.insert(genes.end(), l.genes.begin(), l.genes.begin()+crossover_pos);
+    genes.insert(genes.end(), r.genes.begin()+crossover_pos, r.genes.end());
+    find_roots();
+}
+
 void Individual::calculate_objectives(cv::Mat &img) {
     // TODO: Can be optimized to only calculate where something has changed.
     edge_value = obj::edge_value(img, genes, root, img.cols, img.rows);
@@ -98,4 +107,11 @@ std::vector<int> Individual::find_children(int pos) {
         children.push_back(pos+1);
     return children;
 }
+
+void Individual::mutate(int pos) {
+    Dir new_dir = directions[rand()%directions.size()];
+    while (new_dir == genes[pos])
+        new_dir = directions[rand()%directions.size()];
+
+    int new_root = find_root(pos);
 }

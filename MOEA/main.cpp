@@ -2,6 +2,7 @@
 #include "individual.h"
 #include "objective.h"
 #include "nsga.h"
+#include "ga.h"
 #include <iostream>
 #include <chrono>
 #include <queue>
@@ -87,4 +88,13 @@ int main() {
             std::cout << sorted[front][ind].edge_value << " " << sorted[front][ind].connectivity << " "<< sorted[front][ind].overall_deviation << std::endl;
         }
     }
+
+    std::cout << std::endl;
+    auto crowding_sorted = nsga::crowding_sort(sorted[0]);
+    for (int ind=0; ind<crowding_sorted.size(); ++ind) {
+        std::cout << crowding_sorted[ind].edge_value << " " << crowding_sorted[ind].connectivity << " "<< crowding_sorted[ind].overall_deviation << std::endl;
+    }
+
+    GA nsga_ii(30, true, img);
+    nsga_ii.simulate();
 }

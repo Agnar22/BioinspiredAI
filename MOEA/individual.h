@@ -54,4 +54,15 @@ inline bool operator<(const Individual &l, const Individual &r) {
     return false;
 }
 
+inline bool operator==(const Individual &l, const Individual &r) {
+    // Edge value should be maximized, on the other hand connectivity and overall deviation should be minimized.
+    if (l.edge_value==r.edge_value &&
+        l.connectivity==r.connectivity &&
+        l.overall_deviation==r.overall_deviation &&
+        l.genes == r.genes &&
+        l.root == r.root)
+        return true;
+    return false;
+}
+
 #endif
