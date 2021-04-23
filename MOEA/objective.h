@@ -10,7 +10,7 @@
 namespace obj {
     double edge_value(cv::Mat&, std::vector<Dir>&, std::vector<int>&, int, int);
     double connectivity(std::vector<int>&, int, int);
-    std::map<int, cv::Vec3d> find_segment_means(cv::Mat&, std::vector<int> &);
+    std::map<int, std::vector<double>> find_segment_means(cv::Mat&, std::vector<int> &);
     double overall_deviation(cv::Mat&, std::vector<int>&, int, int);
 }
 
