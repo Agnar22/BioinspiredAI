@@ -5,6 +5,8 @@ enum class Dir:int {
     s=0, u, l, d, r
 };
 
+static std::vector<Dir> directions{Dir::s, Dir::u, Dir::l, Dir::d, Dir::r};
+
 static Dir find_direction(int from, int to, int width, int height) {
     if (!(0 <= from && from < width*height && 0 <= to && to < width*height))
         throw std::invalid_argument("The given points were outside of the valid range.");
