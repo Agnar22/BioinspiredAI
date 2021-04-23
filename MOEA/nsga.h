@@ -25,7 +25,8 @@ namespace nsga {
         CrowdingIndividual(): ind(0), values(3, 0.0), distances(3, 0.0) {};
     };
 
-    std::vector<std::vector<Individual>> fast_nondominated_sort(std::vector<Individual>&, cv::Mat&);
+    std::vector<std::vector<Individual>> sort_and_limit(std::vector<Individual>&, cv::Mat&, int);
+    std::vector<std::vector<Individual>> fast_nondominated_sort(std::vector<Individual>&, cv::Mat&, bool recalculate=true);
     std::vector<Individual> crowding_sort(std::vector<Individual>&);
 }
 

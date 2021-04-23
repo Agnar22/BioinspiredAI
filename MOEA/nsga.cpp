@@ -10,12 +10,29 @@ nsga::DominationIndividual::DominationIndividual(int ind) {
 };
 */
 
-std::vector<std::vector<Individual>> nsga::fast_nondominated_sort(std::vector<Individual> &pop, cv::Mat &img) {
+std::vector<std::vector<Individual>> nsga::sort_and_limit(std::vector<Individual> &pop, cv::Mat &img, int limit) {
+    auto nondominated_sorted = fast_nondominated_sort(pop, img);
+    int num_ind = 0;
+    for (int i=0; i<nondominated_sorted.size(); ++i) {
+        num_ind+=nondominated_sorted[i].size();
+        if (num_ind>=limit) {
+            nondominated_sorted = {nondominated_sorted.begin(), nondominated_sorted.begin()+i+1};
+            nondominated_sorted[i] = crowding_sort(nondominated_sorted[i]);
+            int ind_to_remove = num_ind-limit;
+            nondominated_sorted[i] = {nondominated_sorted[i].begin(), nondominated_sorted[i].end()-ind_to_remove};
+            break;
+        }
+    }
+    return nondominated_sorted;
+}
+
+std::vector<std::vector<Individual>> nsga::fast_nondominated_sort(std::vector<Individual> &pop, cv::Mat &img, bool recalculate) {
     std::vector<DominationIndividual> dominations(pop.size());
     std::vector<std::vector<DominationIndividual>> fronts(1);
     for (int ind=0; ind<pop.size(); ++ind) {
         dominations[ind] = DominationIndividual(ind);
-        pop[ind].calculate_objectives(img);
+        if (recalculate)
+            pop[ind].calculate_objectives(img);
     }
     
     for (DominationIndividual &p:dominations) {
