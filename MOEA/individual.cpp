@@ -42,10 +42,60 @@ void Individual::find_roots() {
 }
 
 int Individual::find_root(int gene) {
-    if (root[gene]!=-1)
+    visited.clear();
+    visited.resize(genes.size(), false);
+    return root_search(gene, -1);
+}
+
+int Individual::root_search(int gene, int max_visited) {
+    if (root[gene]!=-1) // FIXME: Is this correct? Shouldn't it be gene?
         return root[gene];
-    if (get_actual_dir(genes[gene], gene, width, height)==Dir::s)
-        return root[gene]=gene;
+    if (visited[gene])
+        return root[gene] = max_visited;
+    visited[gene] = true;
+    if (get_actual_dir(genes[gene], gene, width, height)==Dir::s) {
+        root[gene]=gene;
+        return gene;
+    }
     int parent_gene = find_pos(gene, genes[gene], width, height);
-    return root[gene]=find_root(parent_gene);
+    // Two neighbours are pointing at each other. Choosing the one with the highest
+    // gene as root.
+    if (reverse_dir(genes[parent_gene])==genes[gene] && gene>parent_gene) {
+        return root[gene] = gene;
+    }
+    return root[gene]=root_search(parent_gene, std::max(gene, max_visited));
+
+}
+
+void Individual::set_descendants(int node, int val) {
+    std::queue<int> bfs;
+    bfs.push(node);
+
+    while (!bfs.empty()) {
+        int curr_node = bfs.front();
+        bfs.pop();
+        root[curr_node] = val;
+
+        for (int child:find_children(curr_node)) {
+            bfs.push(child);
+        }
+    }
+}
+
+std::vector<int> Individual::find_children(int pos) {
+    std::vector<int> children;
+    // Up from pos.
+    if (pos/width!=0 && genes[pos-width] == Dir::d)
+        children.push_back(pos-width);
+    // Down from pos.
+    if (pos/width!=height-1 && genes[pos+width] == Dir::u)
+        children.push_back(pos+width);
+    // Left from pos.
+    if (pos%width!=0 && genes[pos-1] == Dir::r)
+        children.push_back(pos-1);
+    // Rifht from pos.
+    if (pos%width!=width-1 && genes[pos+1] == Dir::l)
+        children.push_back(pos+1);
+    return children;
+}
 }
