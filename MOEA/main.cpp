@@ -63,6 +63,57 @@ void segment_and_display_image(cv::Mat orig_image, std::vector<Dir> genes, int w
     cv::waitKey(0);
 }
 
+bool is_edge(std::vector<int> roots, int x, int y, int width, int height) {
+    int pos=y*width+x;
+    if (
+        (y>0 && x>0 && roots[pos] != roots[pos-width-1]) || // Up-left
+        (y>0 && roots[pos] != roots[pos-width]) || // Up
+        (y>0 && x<width-1 && roots[pos] != roots[pos-width+1]) || // Up-right
+        (x<width-1 && roots[pos] != roots[pos+1]) || // Right
+        (y<height-1 && x<width-1 && roots[pos] != roots[pos+width+1]) || // Down-right
+        (y<height-1 && roots[pos] != roots[pos+width]) || // Down
+        (y<height-1 && x>0 && roots[pos] != roots[pos+width-1]) || // Down-left
+        (x>0 && roots[pos] != roots[pos+width-1])// Left
+    ) {
+        return true;
+    }
+    return false;
+}
+
+std::vector<std::vector<int>> create_type_2_seg(std::vector<int> roots, int width, int height) {
+    std::vector<std::vector<int>> type_2_seg;
+    for (int y=0; y<height; ++y) {
+        std::vector<int> row;
+        for (int x=0; x<width; ++x) {
+            if (is_edge(roots, x, y, width, height))
+                row.push_back(0);
+            else
+                row.push_back(255);
+        }
+        type_2_seg.push_back(row);
+    }
+    return type_2_seg;
+}
+
+void display_2d_vector(std::vector<std::vector<int>> borders, cv::Mat img, bool type_1, std::string name) {
+    if (type_1) { // Type 1 segmentation.
+        for (int y=0; y<borders.size(); ++y)
+            for (int x=0; x<borders[y].size(); ++x)
+                if (borders[y][x]==0)
+                    img.at<cv::Vec3b>(y, x)=cv::Vec3b{0, 255, 0};
+        cv::imshow("test", img);
+        cv::waitKey(0);
+
+    } else { // Type 2 segmentation.
+        cv::Mat img(borders.size(), borders[0].size(), CV_8UC3, cv::Scalar(0, 0, 0));
+        for (int y=0; y<borders.size(); ++y)
+            for (int x=0; x<borders[y].size(); ++x)
+                img.at<cv::Vec3b>(y, x)=cv::Vec3b{(unsigned char)borders[y][x], (unsigned char)borders[y][x], (unsigned char)borders[y][x]};
+        cv::imwrite(name, img);
+        std::cout << "Saved image: " << name << std::endl;
+    }
+}
+
 int main() {
     std::cout << "Loading image" << std::endl;
     auto img = file::read_image_to_vector("/home/agnar/Git/BioinspiredAI/MOEA/training_images/353013/test_image.jpg");
@@ -97,4 +148,10 @@ int main() {
 
     GA nsga_ii(30, true, img);
     nsga_ii.simulate();
+
+    for (int num=0; num<nsga_ii.population.size(); ++num) {
+        auto type_2_seg = create_type_2_seg(nsga_ii.population[num].root, img.cols, img.rows);
+        display_2d_vector(type_2_seg, img, false, "../img/Student_Segmentation_Files/"+std::to_string(num)+".jpg");
+    }
+    
 }

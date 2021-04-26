@@ -5,8 +5,8 @@ import re
 
 path = os.path.dirname(os.path.abspath(__file__).replace("evaluator", "img"))
 
-optimalFolder = path + "\\1-Optimal-Segments"  # you may have to specify the complete path
-studentFolder = path + "\\1-Our-Segments" # you may have to specify the complete path
+optimalFolder = path + "/Optimal_Segmentation_Files" #"\\1-Optimal-Segments"  # you may have to specify the complete path
+studentFolder = path + "/Student_Segmentation_Files" #"\\1-Our-Segments" # you may have to specify the complete path
 colorValueSlackRange = 40
 blackValueThreshold = 100 # colors below 100 is black
 pixelRangeCheck = 4

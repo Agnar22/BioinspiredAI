@@ -10,6 +10,7 @@
 
 namespace file {
     cv::Mat read_image_to_vector(std::string);
+    void write_2d_vector(std::vector<std::vector<int>>, std::string);
 }
 
 #endif
