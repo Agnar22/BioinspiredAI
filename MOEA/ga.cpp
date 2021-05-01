@@ -73,7 +73,7 @@ std::pair<Individual, Individual> GA::crossover(Individual &p1, Individual &p2) 
     std::cout << "p1.root.size() " << p1.root.size() << " p2.root.size() " << p2.root.size() << std::endl;
     Individual c1(p1, p2, crossover_pos, image);
     std::cout << "created c1" << std::endl;
-    Individual c2(p1, p2, crossover_pos, image);
+    Individual c2(p2, p1, crossover_pos, image);
     std::cout << "created c2" << std::endl;
     return std::make_pair(c1, c2);
 }
