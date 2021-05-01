@@ -12,7 +12,7 @@ void Graph::add_edge(int u, int v, int w) {
     adj[v].push_back(std::make_pair(u, w));
 }
 
-std::vector<Dir> Graph::prim_mst(int src) {
+std::vector<Dir> Graph::prim_mst(int src, int treshold) {
     std::priority_queue<iPair, std::vector<iPair>, std::greater<iPair>> pq;
     std::vector<int> key(V, INF);
     std::vector<Dir> parent(V, Dir::s);
@@ -33,10 +33,10 @@ std::vector<Dir> Graph::prim_mst(int src) {
             if (inMST[v] == false && key[v] > weight) {
                 key[v] = weight;
                 pq.push(std::make_pair(key[v], v));
-                if (weight < 15 || (double) rand() / (RAND_MAX)<0.02)
-                    parent[v] = find_direction(v, u, width, height);
-                else
+                if (weight > treshold/* || (double) rand() / (RAND_MAX)<0.003*/)
                     parent[v] = Dir::s;
+                else
+                    parent[v] = find_direction(v, u, width, height);
             }
         }
     }

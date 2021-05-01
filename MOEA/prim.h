@@ -15,7 +15,7 @@ class Graph {
 public:
     Graph(int, int, int);
     void add_edge(int, int, int);
-    std::vector<Dir> prim_mst(int);
+    std::vector<Dir> prim_mst(int, int);
 };
 
 #endif

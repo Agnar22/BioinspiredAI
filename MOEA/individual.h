@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <opencv2/opencv.hpp>
 #include "prim.h"
+#include "kruskal.h"
 #include "objective.h"
 
 static double euc_dist(cv::Vec3b from, cv::Vec3b to) {
@@ -23,9 +24,24 @@ static double euc_dist(cv::Vec3b from, std::vector<double> to) {
     );
 }
 
+static double euc_dist(cv::Point3_<uchar> from, std::vector<double> to) {
+    return std::sqrt(
+        std::pow((double)(from.x)-to[0], 2) +
+        std::pow((double)(from.y)-to[1], 2) +
+        std::pow((double)(from.z)-to[2], 2)
+    );
+}
+
+static double euc_dist(double x1, double y1, double x2, double y2) {
+    return std::sqrt(
+        std::pow(x1-x2, 2) +
+        std::pow(y1-y2, 2)
+    );
+}
+
 class Individual {
     public:
-        Individual(cv::Mat);
+        Individual(cv::Mat, int);
         Individual(Individual&, Individual&, int, cv::Mat&);
         std::vector<Dir> genes;
         std::vector<int> root;
@@ -40,7 +56,7 @@ class Individual {
 
     private:
         std::vector<bool> visited;
-        void initialize_genes(cv::Mat);
+        void initialize_genes(cv::Mat, int);
         void find_roots();
         int root_search(int, int);
 };

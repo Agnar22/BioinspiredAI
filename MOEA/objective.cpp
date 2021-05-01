@@ -1,6 +1,7 @@
 #include "objective.h"
 
 double obj::edge_value(cv::Mat &orig_img, std::vector<Dir> &genes, std::vector<int> &root, int width, int height) {
+    // TODO: Add all nearest neighbours.
     double sum_edge_value=0;
     for (int row=0; row<height; ++row) {
         for (int col=0; col<width; ++col) {
@@ -10,16 +11,20 @@ double obj::edge_value(cv::Mat &orig_img, std::vector<Dir> &genes, std::vector<i
             int neigh_down_right = curr_gene+width+1;
             int neigh_down_left = curr_gene+width-1;
             if (row<height-1 && root[curr_gene]!=root[neigh_down]) {
+                //std::cout << row*width+col << " : " << (row+1)*width+col << "  "  << euc_dist(orig_img.at<cv::Vec3b>(row, col), orig_img.at<cv::Vec3b>(row+1, col)) << std::endl;
                 sum_edge_value += euc_dist(orig_img.at<cv::Vec3b>(row, col), orig_img.at<cv::Vec3b>(row+1, col));
             }
             if (col<width-1 && root[curr_gene]!=root[neigh_right]) {
                 sum_edge_value += euc_dist(orig_img.at<cv::Vec3b>(row, col), orig_img.at<cv::Vec3b>(row, col+1));
+                //std::cout << row*width+col << " : " << row*width+col+1 << "  "  << euc_dist(orig_img.at<cv::Vec3b>(row, col), orig_img.at<cv::Vec3b>(row, col+1)) << std::endl;
             }
             if (row<height-1 && col<width-1 && root[curr_gene]!=root[neigh_down_right]) {
                 sum_edge_value += euc_dist(orig_img.at<cv::Vec3b>(row, col), orig_img.at<cv::Vec3b>(row+1, col+1));
+                //std::cout << row*width+col << " : " << (row+1)*width+col+1 << "  "  << euc_dist(orig_img.at<cv::Vec3b>(row, col), orig_img.at<cv::Vec3b>(row+1, col+1)) << std::endl;
             }
             if (row<height-1 && col>0 && root[curr_gene]!=root[neigh_down_left]) {
                 sum_edge_value += euc_dist(orig_img.at<cv::Vec3b>(row, col), orig_img.at<cv::Vec3b>(row+1, col-1));
+                //std::cout << row*width+col << " : " << (row+1)*width+col-1 << "  "  << euc_dist(orig_img.at<cv::Vec3b>(row, col), orig_img.at<cv::Vec3b>(row+1, col-1)) << std::endl;
             }
         }
     }
@@ -27,6 +32,7 @@ double obj::edge_value(cv::Mat &orig_img, std::vector<Dir> &genes, std::vector<i
 }
 
 double obj::connectivity(std::vector<int> &root, int width, int height) {
+    // TODO: Add all nearest neighbours.
     double sum_connectivity=0.0;
     for (int row=0; row<height; ++row) {
         for (int col=0; col<width; ++col) {
@@ -70,7 +76,9 @@ std::map<int, std::vector<double>> obj::find_segment_means(cv::Mat &img, std::ve
     std::map<int, std::vector<double>> segment_means;
     for (std::pair<int, std::vector<double>> elem:segment_sum) {
         int key = elem.first;
+        //cv::Vec3b value = elem.second;
         std::vector<double> segment_sum = elem.second;
+        //std::cout << (double)(segment_sum[0]) << std::endl;
         segment_means[key] = std::vector<double>{
             (double)(segment_sum[0])/(double)(pxls_in_segment[key]),
             (double)(segment_sum[1])/(double)(pxls_in_segment[key]),
@@ -86,10 +94,12 @@ double obj::overall_deviation(cv::Mat &orig_img, std::vector<int> &root, int wid
     for (int i=0; i<9; ++i) {
         auto pxl = orig_img.at<cv::Vec3b>(i/width, i%width);
         auto mean = segment_means[root[i]];
+        //std::cout << root[i] << " " << (int)pxl[0] << " " << (int)pxl[1] << " " << (int)pxl[2] << " - " << mean[0] << " " << mean[1] << " " << mean[2] << std::endl;
     }
     for (int row=0; row<height; ++row) {
         for (int col=0; col<width; ++col) {
             int curr_gene = row*width+col;
+            //std::cout << row*width+col << " "  << euc_dist(orig_img.at<cv::Vec3b>(row, col), segment_means[root[curr_gene]]) << " " << segment_means[root[curr_gene]][0]<< " " << segment_means[root[curr_gene]][1]<< " " << segment_means[root[curr_gene]][2] << std::endl;
             sum_overall_deviation += euc_dist(orig_img.at<cv::Vec3b>(row, col), segment_means[root[curr_gene]]);
         }
     }

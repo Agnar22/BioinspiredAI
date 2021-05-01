@@ -3,12 +3,31 @@
 #include "objective.h"
 #include "nsga.h"
 #include "ga.h"
+#include "slic.h"
+#include "kruskal.h"
 #include <iostream>
 #include <chrono>
 #include <queue>
 #include <stdlib.h>
 #include <string>
 
+// TODO: x Mutation of MOEA individuals.
+// TODO: x Initialize individuals from two parents.
+// TODO: x Create type 1 and type 2 segmentations from genes.
+// TODO: x Find PRI based on type 2 segmentations.
+// TODO: x Test code on images.
+// TODO: Create parameter file.
+// TODO: Implement weighted-sum GA.
+// TODO: Find more useful mutations/introduce some "intelligent" stochasticity.
+// TODO: Find a more useful crossover.
+// TODO: Limit highest and lowest number of segmentations.
+// TODO: x Solve all tasks
+
+
+// NOT NECESSARY:
+// TODO: Fix connectivity.
+// TODO: Implement super-pixels.
+// TODO: Create tests for necessary parts of code (nsga, integration test of simulation, calculation of objectives, construction of root from genes).
 
 void segment_and_display_image(cv::Mat orig_image, std::vector<Dir> genes, int width, int height, int treshold) {
     cv::Mat img(height, width, CV_8UC3, cv::Scalar(0, 0, 0));
@@ -66,13 +85,13 @@ void segment_and_display_image(cv::Mat orig_image, std::vector<Dir> genes, int w
 bool is_edge(std::vector<int> roots, int x, int y, int width, int height) {
     int pos=y*width+x;
     if (
-        (y>0 && x>0 && roots[pos] != roots[pos-width-1]) || // Up-left
+        //(y>0 && x>0 && roots[pos] != roots[pos-width-1]) || // Up-left
         (y>0 && roots[pos] != roots[pos-width]) || // Up
-        (y>0 && x<width-1 && roots[pos] != roots[pos-width+1]) || // Up-right
+        //(y>0 && x<width-1 && roots[pos] != roots[pos-width+1]) || // Up-right
         (x<width-1 && roots[pos] != roots[pos+1]) || // Right
-        (y<height-1 && x<width-1 && roots[pos] != roots[pos+width+1]) || // Down-right
+        //(y<height-1 && x<width-1 && roots[pos] != roots[pos+width+1]) || // Down-right
         (y<height-1 && roots[pos] != roots[pos+width]) || // Down
-        (y<height-1 && x>0 && roots[pos] != roots[pos+width-1]) || // Down-left
+        //(y<height-1 && x>0 && roots[pos] != roots[pos+width-1]) || // Down-left
         (x>0 && roots[pos] != roots[pos+width-1])// Left
     ) {
         return true;
@@ -106,21 +125,37 @@ void display_2d_vector(std::vector<std::vector<int>> borders, cv::Mat img, bool 
 
     } else { // Type 2 segmentation.
         cv::Mat img(borders.size(), borders[0].size(), CV_8UC3, cv::Scalar(0, 0, 0));
-        for (int y=0; y<borders.size(); ++y)
-            for (int x=0; x<borders[y].size(); ++x)
-                img.at<cv::Vec3b>(y, x)=cv::Vec3b{(unsigned char)borders[y][x], (unsigned char)borders[y][x], (unsigned char)borders[y][x]};
+        for (int y=0; y<borders.size(); ++y) {
+            for (int x=0; x<borders[y].size(); ++x) {
+                if (y==0 || y==borders.size()-1 || x==0 || x==borders[y].size()-1) {
+                    img.at<cv::Vec3b>(y, x)=cv::Vec3b{(unsigned char)0, (unsigned char)0, (unsigned char)0};
+                }
+                else {
+                    img.at<cv::Vec3b>(y, x)=cv::Vec3b{(unsigned char)borders[y][x], (unsigned char)borders[y][x], (unsigned char)borders[y][x]};
+                }
+            }
+        }
         cv::imwrite(name, img);
         std::cout << "Saved image: " << name << std::endl;
+        //cv::imshow("test", img);
+        //cv::waitKey(0);
     }
 }
 
 int main() {
     std::cout << "Loading image" << std::endl;
-    auto img = file::read_image_to_vector("/home/agnar/Git/BioinspiredAI/MOEA/training_images/353013/test_image.jpg");
-
+    auto img = file::read_image_to_vector("/home/agnar/Git/BioinspiredAI/MOEA/training_images/86016/Test image.jpg");
     std::cout << "Loaded image" << std::endl;
+
+    /*
+    auto seg = slic::slic(img, 80);
+    auto type_2_seg = create_type_2_seg(seg, img.cols, img.rows);
+    display_2d_vector(type_2_seg, img, true, "../img/Student_Segmentation_Files/slic.jpg");
+    */
+
+    /*
     auto start = std::chrono::high_resolution_clock::now();
-    Individual ind(img);
+    Individual ind(img, 40);
     auto stop = std::chrono::high_resolution_clock::now();
     std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count() << std::endl;
     std::cout << "Finished" << std::endl;
@@ -128,9 +163,57 @@ int main() {
     std::cout << "Edge value: " << obj::edge_value(img, ind.genes, ind.root, img.cols, img.rows) << std::endl;
     std::cout << "Connectivity: " << obj::connectivity(ind.root, img.cols, img.rows) << std::endl;
     std::cout << "Overall deviation: " << obj::overall_deviation(img, ind.root, img.cols, img.rows) << std::endl;
+
+    auto type_2_seg_prim = create_type_2_seg(ind.root, img.cols, img.rows);
+    display_2d_vector(type_2_seg_prim, img, true, "../img/Student_Segmentation_Files/slic_prim.jpg");
+    */
+
+    /*// Using kruskal_mst.
+    std::vector<int> mins{20, 50, 200, 1000};
+    std::vector<int> maxs{2000, 10000,30000};
+    std::vector<int> splits{10, 100, 1000, 5000, 15000};
+    for (int cur_min:mins) {
+        for (int cur_max:maxs) {
+            for (int cur_splits:splits) {
+                UnionFind uf(img.rows*img.cols);
+                int width = img.cols;
+                int height = img.rows;
+                for (int i=0; i<img.rows; ++i) {
+                    for (int j=0; j<img.cols; ++j) {
+                        int pos = i*img.cols+j;
+                        for (Dir dir:directions) {
+                            if (j==0 && dir==Dir::l || j==width-1 && dir==Dir::r ||i==0 && dir==Dir::u || i==height-1 && dir==Dir::d)
+                                continue;
+                            int neigh = find_pos(pos, dir, img.cols, img.rows);
+                            int weight = euc_dist(img.at<cv::Vec3b>(i, j), img.at<cv::Vec3b>(neigh/img.cols, neigh%img.cols));
+                            uf.add_edge(pos, neigh, weight);
+                        }
+                    }
+                }
+                std::vector<int> seg = uf.kruskal_mst(cur_min, cur_max, cur_splits);
+                auto type_2_seg = create_type_2_seg(seg, img.cols, img.rows);
+                display_2d_vector(type_2_seg, img, false, "../img/Student_Segmentation_Files/kruskal"+std::to_string(cur_min)+"-"+std::to_string(cur_max)+"-"+std::to_string(cur_splits)+".jpg");
+            }
+        }
+    }
+    */
+    
+    /*
+    for (int i=4; i<20; ++i) {
+        for (int j=0; j<5; ++j) {
+            UnionFind uf(img.rows*img.cols);
+            std::vector<int> seg = uf.kruskal_prim_mst(i, img).first;
+            auto type_2_seg = create_type_2_seg(seg, img.cols, img.rows);
+            display_2d_vector(type_2_seg, img, false, "../img/Student_Segmentation_Files/kruskal_"+std::to_string(i)+"-"+std::to_string(j)+".jpg");
+        }
+    }
+    */
+
+    //file::write_2d_vector(type_2_seg_prim, "../img/Student_Segmentation_Files/slic_prim.jpg");
+    /*
     std::vector<Individual> population;
     for (int ind=0; ind<30; ++ind) {
-        population.push_back(Individual(img));
+        population.push_back(Individual(img, 40));
     }
     auto sorted = nsga::fast_nondominated_sort(population, img);
     for (int front=0; front<sorted.size(); ++front) {
@@ -145,13 +228,24 @@ int main() {
     for (int ind=0; ind<crowding_sorted.size(); ++ind) {
         std::cout << crowding_sorted[ind].edge_value << " " << crowding_sorted[ind].connectivity << " "<< crowding_sorted[ind].overall_deviation << std::endl;
     }
+    */
 
-    GA nsga_ii(30, true, img);
+    GA nsga_ii(100, true, img);
     nsga_ii.simulate();
 
+/*
+    auto type_2_seg = create_type_2_seg(nsga_ii.population[0].root, img.cols, img.rows);
+    display_2d_vector(type_2_seg, img, false);
+    display_2d_vector(type_2_seg, img, true);
+    file::write_2d_vector(type_2_seg, "test_image.txt");
+*/
+
     for (int num=0; num<nsga_ii.population.size(); ++num) {
-        auto type_2_seg = create_type_2_seg(nsga_ii.population[num].root, img.cols, img.rows);
-        display_2d_vector(type_2_seg, img, false, "../img/Student_Segmentation_Files/"+std::to_string(num)+".jpg");
+        auto ind = nsga_ii.population[num];
+        auto type_2_seg = create_type_2_seg(ind.root, img.cols, img.rows);
+        display_2d_vector(type_2_seg, img, false, "../img/Student_Segmentation_Files/"+std::to_string(num)+"_"+std::to_string(ind.edge_value)+"-"+std::to_string(ind.connectivity)+"-"+std::to_string(ind.overall_deviation)+".jpg");
     }
     
+    //for (Individual &ind:nsga_ii.population)
+        //segment_and_display_image(img, ind.genes, img.cols, img.rows, 2000);
 }

@@ -23,6 +23,10 @@ std::vector<std::vector<Individual>> nsga::sort_and_limit(std::vector<Individual
             break;
         }
     }
+    std::cout << "Front sizes: ";
+    for (auto front:nondominated_sorted)
+        std::cout << front.size() << " ";
+    std::cout << std::endl;
     return nondominated_sorted;
 }
 
@@ -79,11 +83,13 @@ std::vector<Individual> nsga::crowding_sort(std::vector<Individual> &pop) {
     std::cout << std::endl;
     for (int sorting_pos=0; sorting_pos<3; ++sorting_pos) {
         auto sorting_function = [&](const CrowdingIndividual &l, const CrowdingIndividual &r){
+            //std::cout << "sorting pos is : " << sorting_pos << " " <<l.distances[sorting_pos] << std::endl;
             return l.values[sorting_pos] < r.values[sorting_pos];
         };
         std::sort(crowding_pop.begin(), crowding_pop.end(), sorting_function);
         double value_length = crowding_pop[crowding_pop.size()-1].values[sorting_pos] - crowding_pop[0].values[sorting_pos];
         for (int ind=0; ind<crowding_pop.size(); ++ind) {
+            //std::cout << crowding_pop[ind].values[sorting_pos] << std::endl;
             if (ind==0 || ind == pop.size()-1) {
                 crowding_pop[ind].distances[sorting_pos] = INF;
                 continue;
@@ -91,6 +97,7 @@ std::vector<Individual> nsga::crowding_sort(std::vector<Individual> &pop) {
             double neighbour_space = std::abs(crowding_pop[ind+1].values[sorting_pos] - crowding_pop[ind-1].values[sorting_pos]);
             crowding_pop[ind].distances[sorting_pos] = neighbour_space/value_length;
         }
+        //std::cout << std::endl;
     }
 
     std::sort(
@@ -101,8 +108,11 @@ std::vector<Individual> nsga::crowding_sort(std::vector<Individual> &pop) {
         }
     );
     std::vector<Individual> crowding_sorted_individuals;
+    //std::cout << std::endl;
     for (CrowdingIndividual ind:crowding_pop) {
         crowding_sorted_individuals.push_back(pop[ind.ind]);
+        //std::cout << std::accumulate(ind.distances.begin(), ind.distances.end(), 0.0) << " " << ind.distances[0] << " " << ind.distances[1] << " "<< ind.distances[2] << std::endl;
     }
+    //std::cout << std::endl;
     return crowding_sorted_individuals;
 }

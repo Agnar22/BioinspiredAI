@@ -1,0 +1,6 @@
+
+poolsize = 50
+connectivity ~100-1000
+    - fjerner alle under 100
+edge_value ~-380000
+overall_deviation ~2000000

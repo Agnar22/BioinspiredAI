@@ -121,7 +121,7 @@ namespace slic {
                         //double clr_dist = euc_dist(img.at<cv::Vec3b>(row, col), clusters[i].rgb);
                         double clr_dist = euc_dist(img_c[row][col], clusters[i].rgb);
                         double pos_dist = euc_dist((double)(col), (double)(row), clusters[i].x, clusters[i].y);
-                        double dist = clr_dist + ((double)(10)/(double)(s)) * pos_dist;
+                        double dist = clr_dist + ((double)(50)/(double)(s)) * pos_dist;
                         pxl_cluster_dist[pxl].push_back(dist);
                         pxl_closest_clusters[pxl].push_back(i);
                     }
@@ -137,7 +137,7 @@ namespace slic {
                         //double clr_dist = euc_dist(img.at<cv::Vec3b>(row, col), clusters[i].rgb);
                         double clr_dist = euc_dist(img_c[row][col], clusters[i].rgb);
                         double pos_dist = euc_dist((double)(col), (double)(row), clusters[i].x, clusters[i].y);
-                        double dist = clr_dist + ((double)(10)/(double)(s)) * pos_dist;
+                        double dist = clr_dist + ((double)(50)/(double)(s)) * pos_dist;
                         pxl_cluster_dist[pxl].push_back(dist);
                         pxl_closest_clusters[pxl].push_back(i);
                     }
@@ -162,7 +162,7 @@ namespace slic {
         }
        // TODO: Encforce connectivity.
        //return std::vector<int>(3, 0);
-       //pxl_cluster = enforce_connectivity(pxl_cluster, clusters, w, h);
+       pxl_cluster = enforce_connectivity(pxl_cluster, clusters, w, h);
        show_segmented_image(pxl_cluster, clusters, w, h);
        return pxl_cluster;
     }

@@ -34,7 +34,7 @@ TEST_F(TestImage, simple) {
 }
 
 TEST_F(TestImage, init_individual) {
-    Individual ind(test_image);
+    Individual ind(test_image, 40);
     EXPECT_EQ(ind.genes[0], Dir::r);
     EXPECT_EQ(ind.genes[1], Dir::s);
     EXPECT_EQ(ind.genes[2], Dir::s);
@@ -47,7 +47,7 @@ TEST_F(TestImage, init_individual) {
 }
 
 TEST_F(TestImage, objectives) {
-    Individual ind(test_image);
+    Individual ind(test_image, 40);
     ind.calculate_objectives(test_image);
 
     EXPECT_DOUBLE_EQ(ind.edge_value, 4842.3314038349436); // Value after calculating was 2*2421.168415
@@ -56,7 +56,7 @@ TEST_F(TestImage, objectives) {
 }
 
 TEST_F(TestImage, roots) {
-    Individual ind(test_image);
+    Individual ind(test_image, 40);
     EXPECT_EQ(ind.root[0], 0);
     EXPECT_EQ(ind.root[1], 0);
     EXPECT_EQ(ind.root[2], 2);
@@ -70,8 +70,8 @@ TEST_F(TestImage, roots) {
 
 TEST_F(TestImage, fast_nondominated_sort) {
     std::vector<Individual> inds = {
-        Individual(test_image), Individual(test_image), Individual(test_image), Individual(test_image),
-        Individual(test_image), Individual(test_image), Individual(test_image), Individual(test_image)
+        Individual(test_image, 40), Individual(test_image, 40), Individual(test_image, 40), Individual(test_image, 40),
+        Individual(test_image, 40), Individual(test_image, 40), Individual(test_image, 40), Individual(test_image, 40)
     };
 
     std::vector<std::vector<double>> objectives = {

@@ -7,6 +7,7 @@
 #include <iterator>
 #include <tuple>
 #include <opencv2/opencv.hpp>
+//#include "individual.h"
 
 namespace file {
     cv::Mat read_image_to_vector(std::string);
