@@ -42,6 +42,7 @@ static double euc_dist(double x1, double y1, double x2, double y2) {
 class Individual {
     public:
         Individual(cv::Mat, int);
+        Individual(Individual&, Individual&, std::vector<int>&, int, int);
         Individual(Individual&, Individual&, int, cv::Mat&);
         std::vector<Dir> genes;
         std::vector<int> root;
@@ -53,11 +54,11 @@ class Individual {
         void set_descendants(int, int);
         std::vector<int> find_children(int);
         int find_root(int);
+        void find_roots();
 
     private:
         std::vector<bool> visited;
         void initialize_genes(cv::Mat, int);
-        void find_roots();
         int root_search(int, int);
 };
 

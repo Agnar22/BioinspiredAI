@@ -20,7 +20,7 @@
 // TODO: x Create parameter file.
 // TODO: Implement weighted-sum GA.
 // TODO: Find more useful mutations/introduce some "intelligent" stochasticity.
-// TODO: Find a more useful crossover.
+// TODO: x Find a more useful crossover.
 // TODO: x Limit highest and lowest number of segmentations.
 // TODO: x Solve all tasks
 // TODO: nsga after each end?

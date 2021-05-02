@@ -9,9 +9,11 @@ static std::string TYPE_2_SAVE_PATH = "../img/Student_Segmentation_Files/";
 
 static bool NSGA_ii = true;
 static int POPULATION_SIZE = 100;
-static int GENERATIONS = 100;
+static int GENERATIONS = 15;
 
 static int MIN_SEGMENTS = 4;
 static int MAX_SEGMENTS = 20;
+
+static int SPLIT_MUTATION = 0.3;
 
 #endif

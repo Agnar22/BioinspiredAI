@@ -5,6 +5,23 @@ Individual::Individual(cv::Mat img, int treshold) {
     find_roots();
 }
 
+Individual::Individual(Individual &l, Individual &r, std::vector<int> &segments, int h, int w) {
+    width = w;
+    height = h;
+    genes.clear();
+    for (int pos=0; pos<width*height; ++pos) {
+        if (segments[pos]==0)
+            genes.push_back(l.genes[pos]);
+        else
+            genes.push_back(r.genes[pos]);
+    }
+    //genes.insert(genes.end(), l.genes.begin(), l.genes.begin()+crossover_pos);
+    //genes.insert(genes.end(), r.genes.begin()+crossover_pos, r.genes.end());
+    //std::cout << "finding roots" << std::endl;
+    find_roots();
+    //std::cout << "found roots" << std::endl;
+}
+
 Individual::Individual(Individual &l, Individual &r, int crossover_pos, cv::Mat &img) {
     width = img.cols;
     height = img.rows;

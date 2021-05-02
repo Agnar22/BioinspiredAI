@@ -87,6 +87,29 @@ std::pair<Individual, Individual> GA::crossover(Individual &p1, Individual &p2) 
 
 
 void GA::mutate(Individual &ind) {
+    // Split: Find the largest edge and make it point to itself (stochastically).
+    if ((double)(rand())/(RAND_MAX)<SPLIT_MUTATION) {
+        int max_pos = 0;
+        double max_dist = 0;
+        for (int pos=0; pos<ind.root.size(); ++pos) {
+            Dir actual_dir = get_actual_dir(ind.genes[pos], pos, image.cols, image.rows);
+            if (actual_dir==Dir::s)
+                continue;
+            int parent = find_pos(pos, actual_dir, image.cols, image.rows);
+            int cur_x = pos % image.cols;
+            int cur_y = pos/ image.cols;
+            int parent_x = parent % image.cols;
+            int parent_y = parent / image.cols;
+            double cur_dist = euc_dist(image.at<cv::Vec3b>(cur_y, cur_y), image.at<cv::Vec3b>(parent_y, parent_x));
+            if (cur_dist>max_dist) {
+                max_pos = pos;
+                max_dist = cur_dist;
+            }
+        }
+        ind.genes[max_pos] = Dir::s;
+        ind.find_roots();
+    }
+    // Connect: Find two neighbouring groups, kruskal on relevant edges.
     for (int pos=0; pos<ind.genes.size(); ++pos)
         if ((double)(rand())/(RAND_MAX)<0.001)
             ind.mutate(pos);
