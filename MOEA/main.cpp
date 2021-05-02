@@ -23,6 +23,7 @@
 // TODO: Find a more useful crossover.
 // TODO: x Limit highest and lowest number of segmentations.
 // TODO: x Solve all tasks
+// TODO: nsga after each end?
 
 void segment_and_display_image(cv::Mat orig_image, std::vector<Dir> genes, int width, int height, int treshold) {
     cv::Mat img(height, width, CV_8UC3, cv::Scalar(0, 0, 0));
@@ -111,11 +112,12 @@ std::vector<std::vector<int>> create_type_2_seg(std::vector<int> roots, int widt
 
 void display_2d_vector(std::vector<std::vector<int>> borders, cv::Mat img, bool type_1, std::string name) {
     if (type_1) { // Type 1 segmentation.
+        cv::Mat save_img = img.clone();
         for (int y=0; y<borders.size(); ++y)
             for (int x=0; x<borders[y].size(); ++x)
-                if (borders[y][x]==0)
-                    img.at<cv::Vec3b>(y, x)=cv::Vec3b{0, 255, 0};
-        cv::imwrite(name, img);
+                if (borders[y][x]==0 || y==0 || y==borders.size()-1 || x==0 || x==borders[y].size()-1)
+                    save_img.at<cv::Vec3b>(y, x)=cv::Vec3b{0, 255, 0};
+        cv::imwrite(name, save_img);
         std::cout << "Saved image: " << name << std::endl;
         //cv::imshow("test", img);
         //cv::waitKey(0);
@@ -240,8 +242,8 @@ int main() {
     for (int num=0; num<nsga_ii.population.size(); ++num) {
         auto ind = nsga_ii.population[num];
         auto type_2_seg = create_type_2_seg(ind.root, img.cols, img.rows);
-        display_2d_vector(type_2_seg, img, false, TYPE_2_SAVE_PATH+std::to_string(num)+"_"+std::to_string(ind.edge_value)+"-"+std::to_string(ind.connectivity)+"-"+std::to_string(ind.overall_deviation)+".jpg");
         display_2d_vector(type_2_seg, img, true, TYPE_1_SAVE_PATH+std::to_string(num)+"_"+std::to_string(ind.edge_value)+"-"+std::to_string(ind.connectivity)+"-"+std::to_string(ind.overall_deviation)+".jpg");
+        display_2d_vector(type_2_seg, img, false, TYPE_2_SAVE_PATH+std::to_string(num)+"_"+std::to_string(ind.edge_value)+"-"+std::to_string(ind.connectivity)+"-"+std::to_string(ind.overall_deviation)+".jpg");
     }
     
     //for (Individual &ind:nsga_ii.population)

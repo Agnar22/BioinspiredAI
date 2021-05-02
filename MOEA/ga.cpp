@@ -28,7 +28,6 @@ void GA::simulate() {
                 //std::cout << "Creating children" << children.size() << std::endl;
                 // Binary tournament selection.
                 std::pair<ii, ii> parents_pos = binary_tournament_selection(sorted_pop);
-                //std::cout << "Binary tournament selection" << std::endl;
                 Individual p1 = sorted_pop[parents_pos.first.first][parents_pos.first.second];
                 Individual p2 = sorted_pop[parents_pos.second.first][parents_pos.second.second];
                 // Recombination / crossover.
@@ -38,12 +37,9 @@ void GA::simulate() {
                 //std::cout << "Mutate" << std::endl;
                 mutate(curr_children.first);
                 mutate(curr_children.second);
-                //std::cout << "Push back" << std::endl;
                 children.push_back(curr_children.first);
                 children.push_back(curr_children.second);
-                //std::cout << "Done with curr_children" << std::endl;
             }
-            //std::cout << "Insert into population" << std::endl;
             population.insert(population.end(), children.begin(), children.end());
             std::cout << "Done with gen " << gen << " population size: " << population.size() << std::endl;
         } else {
@@ -67,6 +63,8 @@ ii GA::select_parent_pos(std::vector<std::vector<Individual>> &sorted_parents) {
 std::pair<Individual, Individual> GA::crossover(Individual &p1, Individual &p2) {
     // Single point crossover.
     int crossover_pos = rand()%(image.rows * image.cols);
+    // kruskal_prim_mst
+    //
     std::cout << "crossover_pos " << crossover_pos << std::endl;
     std::cout << "p1.genes.size() " << p1.genes.size() << " p2.genes.size() " << p2.genes.size() << std::endl;
     std::cout << "p1.root.size() " << p1.root.size() << " p2.root.size() " << p2.root.size() << std::endl;
