@@ -62,15 +62,25 @@ ii GA::select_parent_pos(std::vector<std::vector<Individual>> &sorted_parents) {
 
 std::pair<Individual, Individual> GA::crossover(Individual &p1, Individual &p2) {
     // Single point crossover.
-    int crossover_pos = rand()%(image.rows * image.cols);
+    //int crossover_pos = rand()%(image.rows * image.cols);
     // kruskal_prim_mst
-    //
-    std::cout << "crossover_pos " << crossover_pos << std::endl;
-    std::cout << "p1.genes.size() " << p1.genes.size() << " p2.genes.size() " << p2.genes.size() << std::endl;
-    std::cout << "p1.root.size() " << p1.root.size() << " p2.root.size() " << p2.root.size() << std::endl;
-    Individual c1(p1, p2, crossover_pos, image);
+    UnionFind uf(image.rows*image.cols);
+    auto seg = uf.kruskal_prim_mst(2, image).first;
+    int seg_1 = seg[0];
+    for (int pos=0; pos<seg.size(); ++pos) {
+        if (seg[pos]==seg_1)
+            seg[pos] = 0;
+        else
+            seg[pos] = 1;
+    }
+    //std::cout << "crossover_pos " << crossover_pos << std::endl;
+    //std::cout << "p1.genes.size() " << p1.genes.size() << " p2.genes.size() " << p2.genes.size() << std::endl;
+    //std::cout << "p1.root.size() " << p1.root.size() << " p2.root.size() " << p2.root.size() << std::endl;
+    //Individual c1(p1, p2, crossover_pos, image);
+    Individual c1(p1, p2, seg, image.rows, image.cols);
     std::cout << "created c1" << std::endl;
-    Individual c2(p2, p1, crossover_pos, image);
+    //Individual c2(p2, p1, crossover_pos, image);
+    Individual c2(p2, p1, seg, image.rows, image.cols);
     std::cout << "created c2" << std::endl;
     return std::make_pair(c1, c2);
 }

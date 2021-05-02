@@ -6,6 +6,8 @@
 #include "individual.h"
 #include "nsga.h"
 #include "config.h"
+#include "kruskal.h"
+#include "dir.h"
 
 
 class GA {
