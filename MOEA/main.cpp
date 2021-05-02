@@ -5,6 +5,7 @@
 #include "ga.h"
 #include "slic.h"
 #include "kruskal.h"
+#include "config.h"
 #include <iostream>
 #include <chrono>
 #include <queue>
@@ -120,8 +121,10 @@ void display_2d_vector(std::vector<std::vector<int>> borders, cv::Mat img, bool 
             for (int x=0; x<borders[y].size(); ++x)
                 if (borders[y][x]==0)
                     img.at<cv::Vec3b>(y, x)=cv::Vec3b{0, 255, 0};
-        cv::imshow("test", img);
-        cv::waitKey(0);
+        cv::imwrite(name, img);
+        std::cout << "Saved image: " << name << std::endl;
+        //cv::imshow("test", img);
+        //cv::waitKey(0);
 
     } else { // Type 2 segmentation.
         cv::Mat img(borders.size(), borders[0].size(), CV_8UC3, cv::Scalar(0, 0, 0));
@@ -144,7 +147,7 @@ void display_2d_vector(std::vector<std::vector<int>> borders, cv::Mat img, bool 
 
 int main() {
     std::cout << "Loading image" << std::endl;
-    auto img = file::read_image_to_vector("/home/agnar/Git/BioinspiredAI/MOEA/training_images/86016/Test image.jpg");
+    auto img = file::read_image_to_vector(IMAGE_PATH);
     std::cout << "Loaded image" << std::endl;
 
     /*
@@ -230,7 +233,7 @@ int main() {
     }
     */
 
-    GA nsga_ii(100, true, img);
+    GA nsga_ii(POPULATION_SIZE, NSGA_ii, img);
     nsga_ii.simulate();
 
 /*
@@ -243,7 +246,8 @@ int main() {
     for (int num=0; num<nsga_ii.population.size(); ++num) {
         auto ind = nsga_ii.population[num];
         auto type_2_seg = create_type_2_seg(ind.root, img.cols, img.rows);
-        display_2d_vector(type_2_seg, img, false, "../img/Student_Segmentation_Files/"+std::to_string(num)+"_"+std::to_string(ind.edge_value)+"-"+std::to_string(ind.connectivity)+"-"+std::to_string(ind.overall_deviation)+".jpg");
+        display_2d_vector(type_2_seg, img, false, TYPE_2_SAVE_PATH+std::to_string(num)+"_"+std::to_string(ind.edge_value)+"-"+std::to_string(ind.connectivity)+"-"+std::to_string(ind.overall_deviation)+".jpg");
+        display_2d_vector(type_2_seg, img, true, TYPE_1_SAVE_PATH+std::to_string(num)+"_"+std::to_string(ind.edge_value)+"-"+std::to_string(ind.connectivity)+"-"+std::to_string(ind.overall_deviation)+".jpg");
     }
     
     //for (Individual &ind:nsga_ii.population)

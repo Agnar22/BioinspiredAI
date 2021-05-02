@@ -16,7 +16,7 @@ find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 add_library(individual individual.h individual.cpp objective.h objective.cpp prim.h prim.cpp dir.h)
-add_library(ga ga.h ga.cpp nsga.h nsga.cpp)
+add_library(ga ga.h ga.cpp nsga.h nsga.cpp config.h)
 add_library(file file.h file.cpp)
 add_library(slic slic.h slic.cpp)
 add_library(kruskal kruskal.h kruskal.cpp)

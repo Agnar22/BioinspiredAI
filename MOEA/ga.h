@@ -5,6 +5,7 @@
 #include <opencv2/opencv.hpp>
 #include "individual.h"
 #include "nsga.h"
+#include "config.h"
 
 
 class GA {

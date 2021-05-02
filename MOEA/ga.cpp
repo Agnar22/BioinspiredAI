@@ -5,8 +5,7 @@ typedef std::pair<int, int> ii;
 GA::GA(int pop_size, bool nsga_ii, cv::Mat img): nsga_ii(nsga_ii), image(img) {
     population.clear();
     for (int i=0; i<pop_size; ++i) {
-        //int treshold = 5+rand()%40;
-        int treshold = 4+rand()%10;
+        int treshold = MIN_SEGMENTS+rand()%(MAX_SEGMENTS-MIN_SEGMENTS);
         Individual ind(image, treshold);
         std::cout << i << " " << treshold << std::endl;
         population.push_back(ind);
@@ -15,7 +14,7 @@ GA::GA(int pop_size, bool nsga_ii, cv::Mat img): nsga_ii(nsga_ii), image(img) {
 
 void GA::simulate() {
     int pop_size = population.size();
-    for (int gen=0; gen<10; ++gen) {
+    for (int gen=0; gen<GENERATIONS; ++gen) {
         std::vector<Individual> children;
         std::cout << "Gen: " << gen << std::endl;
         if (nsga_ii) {
