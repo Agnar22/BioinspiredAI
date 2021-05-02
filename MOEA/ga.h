@@ -21,6 +21,8 @@ class GA {
         void simulate();
 
     private:
+        std::vector<double> calculate_fitness(std::vector<Individual>&);
+        std::pair<int, int> tournament_selection(std::vector<double> inds);
         std::pair<std::pair<int, int>, std::pair<int, int>> binary_tournament_selection(std::vector<std::vector<Individual>>&);
         std::pair<int, int> select_parent_pos(std::vector<std::vector<Individual>>&);
         std::pair<Individual, Individual> crossover(Individual&, Individual&);

@@ -152,10 +152,11 @@ std::vector<int> Individual::find_children(int pos) {
 }
 
 void Individual::mutate(int pos) {
-    Dir new_dir = directions[rand()%directions.size()];
-    while (new_dir == genes[pos])
-        new_dir = directions[rand()%directions.size()];
+    Dir new_dir = get_actual_dir(directions[rand()%directions.size()], pos, width, height);
+    //while (new_dir == genes[pos])
+        //new_dir = get_actual_dir(pos, directions[rand()%directions.size()], );
 
-    int new_root = find_root(pos);
+    genes[pos] = new_dir;
+    //int new_root = find_root(pos);
     //std::cout << "mutated " << std::endl;
 }

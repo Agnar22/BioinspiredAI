@@ -14,14 +14,17 @@ GA::GA(int pop_size, bool nsga_ii, cv::Mat img): nsga_ii(nsga_ii), image(img) {
 
 void GA::simulate() {
     int pop_size = population.size();
+    std::vector<std::vector<Individual>> sorted_pop;
     for (int gen=0; gen<GENERATIONS; ++gen) {
         std::vector<Individual> children;
         std::cout << "Gen: " << gen << std::endl;
         if (nsga_ii) {
             //std::cout << "sorting" << population.size() << " " << image.rows << " " << image.cols << " " << pop_size<< std::endl;
-            auto sorted_pop = nsga::sort_and_limit(population, image, pop_size);
-            //std::cout << "flatten sorted pop" << std::endl;
-            population = flatten(sorted_pop);
+            if (gen==0) {
+                sorted_pop = nsga::sort_and_limit(population, image, pop_size);
+                //std::cout << "flatten sorted pop" << std::endl;
+                population = flatten(sorted_pop);
+            }
             std::cout << "size: " << population.size() << std::endl;
             // fast_nondomination_sort
             while (children.size() < population.size()) {
@@ -42,10 +45,63 @@ void GA::simulate() {
             }
             population.insert(population.end(), children.begin(), children.end());
             std::cout << "Done with gen " << gen << " population size: " << population.size() << std::endl;
+            sorted_pop = nsga::sort_and_limit(population, image, pop_size);
+            //std::cout << "flatten sorted pop" << std::endl;
+            population = flatten(sorted_pop);
         } else {
+            std::vector<double> fitnesses = calculate_fitness(population);
+            std::vector<Individual> children;
             // TODO: Implement SGA.
+            while (children.size() < population.size()) {
+                auto parents = tournament_selection(fitnesses);
+                Individual p1 = population[parents.first];
+                Individual p2 = population[parents.second];
+                std::pair<Individual, Individual> curr_children = crossover(p1, p2);
+                mutate(curr_children.first);
+                mutate(curr_children.second);
+                children.push_back(curr_children.first);
+                children.push_back(curr_children.second);
+            }
+            population = children;
+            if (gen==GENERATIONS-1)
+                calculate_fitness(population);
         }
     }
+}
+
+std::vector<double> GA::calculate_fitness(std::vector<Individual> &inds) {
+    std::vector<double> min_values(3, 1e12);
+    std::vector<double> max_values(3, 0);
+    for (Individual &ind:inds) {
+        ind.calculate_objectives(image);
+        min_values[0] = std::min(ind.edge_value, min_values[0]);
+        min_values[1] = std::min(ind.connectivity, min_values[1]);
+        min_values[2] = std::min(ind.overall_deviation, min_values[2]);
+        max_values[0] = std::max(ind.edge_value, max_values[0]);
+        max_values[1] = std::max(ind.connectivity, max_values[1]);
+        max_values[2] = std::max(ind.overall_deviation, max_values[2]);
+    }
+    std::vector<double> fitness;
+    for (Individual &ind:inds) {
+        fitness.push_back(
+            (1-ind.edge_value/(max_values[0]-min_values[0])) +
+            ind.connectivity/(max_values[1]-min_values[1]) +
+            ind.overall_deviation/(max_values[2]-min_values[2])
+        );
+    }
+    return fitness;
+}
+
+std::pair<int, int> GA::tournament_selection(std::vector<double> inds) {
+    std::priority_queue<std::pair<double, int>> selected_inds;
+    for (int i=0; i<NUM_IN_TOURNAMENT; ++i) {
+        int selected_ind = rand()%inds.size();
+        selected_inds.push(std::make_pair(-inds[selected_ind], selected_ind));
+    }
+    int p1 = selected_inds.top().second;
+    selected_inds.pop();
+    int p2 = selected_inds.top().second;
+    return std::make_pair(p1, p2);
 }
 
 std::pair<ii, ii> GA::binary_tournament_selection(std::vector<std::vector<Individual>> &sorted_parents) {
@@ -100,7 +156,7 @@ void GA::mutate(Individual &ind) {
             int cur_y = pos/ image.cols;
             int parent_x = parent % image.cols;
             int parent_y = parent / image.cols;
-            double cur_dist = euc_dist(image.at<cv::Vec3b>(cur_y, cur_y), image.at<cv::Vec3b>(parent_y, parent_x));
+            double cur_dist = euc_dist(image.at<cv::Vec3b>(cur_y, cur_x), image.at<cv::Vec3b>(parent_y, parent_x));
             if (cur_dist>max_dist) {
                 max_pos = pos;
                 max_dist = cur_dist;
@@ -109,8 +165,27 @@ void GA::mutate(Individual &ind) {
         ind.genes[max_pos] = Dir::s;
         ind.find_roots();
     }
-    // Connect: Find two neighbouring groups, kruskal on relevant edges.
-    for (int pos=0; pos<ind.genes.size(); ++pos)
-        if ((double)(rand())/(RAND_MAX)<RANDOM_MUTATION)
+    // Connect: Find two neighbouring groups, prim on relevant edges.
+    /*
+    // find two pixels from different groups.
+    // for all pixels 
+    //  if pixel in one of the groups
+    //      for dir in directions (see main.cpp)
+    //          ...
+    //          add_edge(...)
+    //          ...
+    // prim_mst
+    // get root of cluster (from one of the pxls)
+    // for all pixels
+    //  if pixel in one of the groups
+    //      change dir to prim_mst
+    // find_roots()
+    */
+    for (int pos=0; pos<ind.genes.size(); ++pos) {
+        if ((double)(rand())/(RAND_MAX)<RANDOM_MUTATION) {
             ind.mutate(pos);
+            std::cout << "mutation" << std::endl;
+        }
+    }
+    ind.find_roots();
 }

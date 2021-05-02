@@ -73,7 +73,8 @@ def main():
 	optimalFiles = readFilesFromFolder(optimalFolder)
 	studentFiles = readFilesFromFolder(studentFolder)
 	totalScore = 0
-	for student in studentFiles:
+	file_names = list(os.listdir(studentFolder))
+	for num, student in enumerate(studentFiles):
 		highestScore = 0
 		for opt in optimalFiles:
 			result1 = comparePics(opt,student)
@@ -84,6 +85,7 @@ def main():
 			highestScore = max(highestScore,result)
 		totalScore += highestScore
 		a = highestScore*100
+		print(file_names[num])
 		print("Score: %.2f" % a + "%")
 	a = totalScore/len(studentFiles)*100
 	print("Total Average Score: %.2f" % a + "%")

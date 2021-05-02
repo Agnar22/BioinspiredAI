@@ -88,7 +88,7 @@ bool is_edge(std::vector<int> roots, int x, int y, int width, int height) {
         //(y<height-1 && x<width-1 && roots[pos] != roots[pos+width+1]) || // Down-right
         (y<height-1 && roots[pos] != roots[pos+width]) || // Down
         //(y<height-1 && x>0 && roots[pos] != roots[pos+width-1]) || // Down-left
-        (x>0 && roots[pos] != roots[pos+width-1])// Left
+        (x>0 && roots[pos] != roots[pos-1])// Left
     ) {
         return true;
     }
@@ -100,6 +100,7 @@ std::vector<std::vector<int>> create_type_2_seg(std::vector<int> roots, int widt
     for (int y=0; y<height; ++y) {
         std::vector<int> row;
         for (int x=0; x<width; ++x) {
+            //std::cout << y << " " << x << " " << roots[y*width+x] << std::endl;
             if (is_edge(roots, x, y, width, height))
                 row.push_back(0);
             else
