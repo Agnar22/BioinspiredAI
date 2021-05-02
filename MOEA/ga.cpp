@@ -111,6 +111,6 @@ void GA::mutate(Individual &ind) {
     }
     // Connect: Find two neighbouring groups, kruskal on relevant edges.
     for (int pos=0; pos<ind.genes.size(); ++pos)
-        if ((double)(rand())/(RAND_MAX)<0.001)
+        if ((double)(rand())/(RAND_MAX)<RANDOM_MUTATION)
             ind.mutate(pos);
 }

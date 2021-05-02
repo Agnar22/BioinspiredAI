@@ -16,5 +16,6 @@ static int MIN_SEGMENTS = 4;
 static int MAX_SEGMENTS = 20;
 
 static int SPLIT_MUTATION = 0.3;
+static double RANDOM_MUTATION = 0.001;
 
 #endif
