@@ -17,11 +17,11 @@
 // TODO: x Create type 1 and type 2 segmentations from genes.
 // TODO: x Find PRI based on type 2 segmentations.
 // TODO: x Test code on images.
-// TODO: Create parameter file.
+// TODO: x Create parameter file.
 // TODO: Implement weighted-sum GA.
 // TODO: Find more useful mutations/introduce some "intelligent" stochasticity.
 // TODO: Find a more useful crossover.
-// TODO: Limit highest and lowest number of segmentations.
+// TODO: x Limit highest and lowest number of segmentations.
 // TODO: x Solve all tasks
 
 
