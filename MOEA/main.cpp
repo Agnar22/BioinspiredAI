@@ -6,6 +6,7 @@
 #include "slic.h"
 #include "kruskal.h"
 #include "config.h"
+#include <unordered_set>
 #include <iostream>
 #include <chrono>
 #include <queue>
@@ -243,8 +244,10 @@ int main() {
     for (int num=0; num<nsga_ii.population.size(); ++num) {
         auto ind = nsga_ii.population[num];
         auto type_2_seg = create_type_2_seg(ind.root, img.cols, img.rows);
-        display_2d_vector(type_2_seg, img, true, TYPE_1_SAVE_PATH+std::to_string(num)+"_"+std::to_string(ind.edge_value)+"-"+std::to_string(ind.connectivity)+"-"+std::to_string(ind.overall_deviation)+".jpg");
-        display_2d_vector(type_2_seg, img, false, TYPE_2_SAVE_PATH+std::to_string(num)+"_"+std::to_string(ind.edge_value)+"-"+std::to_string(ind.connectivity)+"-"+std::to_string(ind.overall_deviation)+".jpg");
+        std::unordered_set<int> root_nums(ind.root.begin(), ind.root.end());
+        int num_segments_root = root_nums.size();
+        display_2d_vector(type_2_seg, img, true, TYPE_1_SAVE_PATH+std::to_string(num)+"_"+std::to_string(ind.edge_value)+"-"+std::to_string(ind.connectivity)+"-"+std::to_string(ind.overall_deviation)+"-"+std::to_string(num_segments_root)+".jpg");
+        display_2d_vector(type_2_seg, img, false, TYPE_2_SAVE_PATH+std::to_string(num)+"_"+std::to_string(ind.edge_value)+"-"+std::to_string(ind.connectivity)+"-"+std::to_string(ind.overall_deviation)+"-"+std::to_string(num_segments_root)+".jpg");
     }
     
     //for (Individual &ind:nsga_ii.population)
