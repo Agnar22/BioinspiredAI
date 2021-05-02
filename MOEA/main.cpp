@@ -24,12 +24,6 @@
 // TODO: x Limit highest and lowest number of segmentations.
 // TODO: x Solve all tasks
 
-
-// NOT NECESSARY:
-// TODO: Fix connectivity.
-// TODO: Implement super-pixels.
-// TODO: Create tests for necessary parts of code (nsga, integration test of simulation, calculation of objectives, construction of root from genes).
-
 void segment_and_display_image(cv::Mat orig_image, std::vector<Dir> genes, int width, int height, int treshold) {
     cv::Mat img(height, width, CV_8UC3, cv::Scalar(0, 0, 0));
     std::vector<bool> visited(genes.size(), false);
