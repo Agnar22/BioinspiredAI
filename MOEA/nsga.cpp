@@ -47,7 +47,7 @@ std::vector<std::vector<Individual>> nsga::fast_nondominated_sort(std::vector<In
                 ++p.times_dominated;
             }
         }
-        if (p.times_dominated==0)
+        if (p.times_dominated==0 && pop[p.ind].connectivity>CONNECTIVITY_MIN)
             fronts[0].push_back(p);
     }
 

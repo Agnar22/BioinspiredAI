@@ -5,6 +5,7 @@
 #include <opencv2/opencv.hpp>
 #include <algorithm>
 #include "individual.h"
+#include "config.h"
 
 namespace nsga {
     struct DominationIndividual {
